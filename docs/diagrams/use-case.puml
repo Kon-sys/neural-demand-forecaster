@@ -1,0 +1,56 @@
+@startuml
+left to right direction
+
+actor "Незарегистрированный\nпользователь" as Guest
+actor USER as User
+actor ADMIN as Admin
+actor "ML-сервис" as ML
+
+Admin --|> User
+
+rectangle "Система прогнозирования\nпотребительского спроса" {
+
+  usecase "Регистрация" as UC01
+  usecase "Авторизация" as UC02
+  usecase "Выход" as UC10
+
+  usecase "Просмотр товаров" as UC04
+  usecase "Управление товарами" as UC03
+
+  usecase "Просмотр истории\nпродаж" as UC06
+  usecase "Импорт продаж\nиз CSV" as UC05
+
+  usecase "Построение\nпрогноза" as UC07
+  usecase "Просмотр результата" as UC08
+  usecase "Просмотр истории\nпрогнозов" as UC09
+
+  usecase "Проверка входных\nпараметров" as ValidateForecast
+  usecase "Получение истории\nпродаж" as LoadSales
+  usecase "ML-прогнозирование" as Predict
+  usecase "Сохранение\nрезультата" as SaveForecast
+}
+
+Guest --> UC01
+Guest --> UC02
+
+User --> UC02
+User --> UC10
+
+User --> UC04
+User --> UC06
+
+User --> UC07
+User --> UC08
+User --> UC09
+
+Admin --> UC03
+Admin --> UC05
+
+UC07 .> ValidateForecast : <<include>>
+UC07 .> LoadSales : <<include>>
+UC07 .> Predict : <<include>>
+UC07 .> SaveForecast : <<include>>
+
+ML --> Predict
+
+@enduml
