@@ -1,0 +1,82 @@
+@startuml
+
+hide methods
+hide stereotypes
+
+entity "users" as users {
+    * id : BIGINT <<PK>>
+    --
+    name : VARCHAR(100)
+    email : VARCHAR(255) <<UQ>>
+    password_hash : VARCHAR(255)
+    role : VARCHAR(20)
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+}
+
+entity "products" as products {
+    * id : BIGINT <<PK>>
+    --
+    sku : VARCHAR(64) <<UQ>>
+    name : VARCHAR(255)
+    category : VARCHAR(120)
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+}
+
+entity "sales" as sales {
+    * id : BIGINT <<PK>>
+    --
+    * product_id : BIGINT <<FK>>
+    sale_date : DATE
+    quantity : INTEGER
+    created_at : TIMESTAMPTZ
+}
+
+entity "forecasts" as forecasts {
+    * id : BIGINT <<PK>>
+    --
+    * user_id : BIGINT <<FK>>
+    * product_id : BIGINT <<FK>>
+    forecast_horizon : INTEGER
+    model_version : VARCHAR(100)
+    status : VARCHAR(20)
+    mae : NUMERIC(18,6)
+    rmse : NUMERIC(18,6)
+    mape : NUMERIC(18,6)
+    created_at : TIMESTAMPTZ
+    started_at : TIMESTAMPTZ
+    completed_at : TIMESTAMPTZ
+    error_message : VARCHAR(1000)
+}
+
+entity "forecast_values" as forecast_values {
+    * id : BIGINT <<PK>>
+    --
+    * forecast_id : BIGINT <<FK>>
+    forecast_date : DATE
+    predicted_quantity : NUMERIC(18,4)
+}
+
+products ||--o{ sales : "имеет"
+users ||--o{ forecasts : "создаёт"
+products ||--o{ forecasts : "прогнозируется"
+forecasts ||--|{ forecast_values : "содержит"
+
+note right of sales
+UNIQUE:
+(product_id, sale_date)
+
+CHECK:
+quantity >= 0
+end note
+
+note right of forecast_values
+UNIQUE:
+(forecast_id, forecast_date)
+
+CHECK:
+predicted_quantity >= 0
+end note
+
+@enduml
