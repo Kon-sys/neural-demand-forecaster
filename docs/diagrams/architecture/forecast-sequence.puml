@@ -1,0 +1,43 @@
+@startuml
+
+actor User
+participant Frontend
+participant Backend
+database PostgreSQL
+participant "ML Service" as ML
+
+User -> Frontend : Выбрать товар и горизонт
+User -> Frontend : Запустить прогноз
+
+Frontend -> Backend : POST /api/v1/forecasts\nJWT + parameters
+
+Backend -> Backend : Проверить JWT
+Backend -> Backend : Проверить параметры
+
+Backend -> PostgreSQL : Получить товар
+PostgreSQL --> Backend : Product
+
+Backend -> PostgreSQL : Получить историю продаж
+PostgreSQL --> Backend : Sales[]
+
+Backend -> Backend : Проверить достаточность истории
+
+Backend -> ML : POST /predict\nsales + horizon
+
+activate ML
+ML -> ML : Preprocessing
+ML -> ML : Load model
+ML -> ML : Inference
+ML --> Backend : PredictionResponse
+deactivate ML
+
+Backend -> PostgreSQL : INSERT Forecast
+PostgreSQL --> Backend : forecastId
+
+Backend -> PostgreSQL : INSERT ForecastValue[]
+PostgreSQL --> Backend : OK
+
+Backend --> Frontend : ForecastResponse
+Frontend --> User : График + значения + метрики
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor User
+actor Admin
+
+component "Frontend\nReact / Vite" as Frontend
+component "Backend\nSpring Boot" as Backend
+component "Auth Module" as Auth
+component "Product Module" as Product
+component "Sale / Import Module" as Sale
+component "Forecast Module" as Forecast
+component "ML Client" as MlClient
+component "ML Service\nFastAPI" as ML
+database "PostgreSQL" as DB
+
+Admin --|> User
+
+User --> Frontend
+Admin --> Frontend
+
+Frontend --> Backend : REST / JSON\nJWT
+
+Backend --> Auth
+Backend --> Product
+Backend --> Sale
+Backend --> Forecast
+
+Auth --> DB
+Product --> DB
+Sale --> DB
+Forecast --> DB
+
+Forecast --> MlClient
+MlClient --> ML : HTTP / JSON\n/predict
+ML --> MlClient : predictions
+
+@enduml
