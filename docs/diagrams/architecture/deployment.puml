@@ -1,0 +1,30 @@
+@startuml
+
+node "Пользовательское устройство" {
+    artifact "Web Browser" as Browser
+}
+
+node "Frontend Environment" {
+    artifact "React / Vite Application" as Frontend
+}
+
+node "Backend Environment" {
+    artifact "Spring Boot Application" as Backend
+}
+
+node "ML Environment" {
+    artifact "FastAPI ML Service" as ML
+    artifact "LSTM Model" as Model
+    artifact "Preprocessing Artifacts" as Preprocessing
+}
+
+database "PostgreSQL" as DB
+
+Browser --> Frontend : HTTP / HTTPS
+Frontend --> Backend : REST / JSON
+Backend --> DB : JDBC / SQL
+Backend --> ML : HTTP / JSON
+ML --> Model
+ML --> Preprocessing
+
+@enduml
