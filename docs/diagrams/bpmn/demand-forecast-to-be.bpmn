@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    id="Definitions_TO_BE"
+    targetNamespace="http://demand-forecast.local/bpmn">
+
+  <bpmn:process id="DemandForecastToBe" name="Прогнозирование спроса TO-BE" isExecutable="false">
+
+    <bpmn:startEvent id="StartEvent" name="Пользователю необходим прогноз"/>
+
+    <bpmn:userTask id="OpenForecastForm" name="Открыть форму прогнозирования"/>
+    <bpmn:userTask id="SelectProduct" name="Выбрать товар"/>
+    <bpmn:userTask id="SetHorizon" name="Указать горизонт прогнозирования"/>
+    <bpmn:userTask id="StartForecast" name="Запустить прогнозирование"/>
+
+    <bpmn:serviceTask id="ValidateRequest" name="Проверить параметры запроса"/>
+
+    <bpmn:exclusiveGateway id="RequestValidGateway" name="Параметры корректны?"/>
+
+    <bpmn:serviceTask id="ReturnValidationError" name="Вернуть сообщение об ошибке"/>
+
+    <bpmn:serviceTask id="LoadSales" name="Получить историю продаж из PostgreSQL"/>
+    <bpmn:serviceTask id="CheckHistory" name="Проверить достаточность истории"/>
+
+    <bpmn:exclusiveGateway id="HistoryEnoughGateway" name="Истории достаточно?"/>
+
+    <bpmn:serviceTask id="ReturnHistoryError" name="Сообщить о недостатке данных"/>
+
+    <bpmn:serviceTask id="PrepareMLRequest" name="Сформировать запрос к ML-сервису"/>
+    <bpmn:serviceTask id="PreprocessData" name="Выполнить ML-предобработку"/>
+    <bpmn:serviceTask id="RunModel" name="Выполнить inference модели"/>
+    <bpmn:serviceTask id="ReturnPrediction" name="Вернуть прогноз Backend"/>
+
+    <bpmn:exclusiveGateway id="MLSuccessGateway" name="Прогноз получен?"/>
+
+    <bpmn:serviceTask id="HandleMLError" name="Обработать ошибку ML-сервиса"/>
+
+    <bpmn:serviceTask id="SaveForecast" name="Сохранить прогноз в PostgreSQL"/>
+    <bpmn:serviceTask id="ReturnResult" name="Передать результат Frontend"/>
+    <bpmn:userTask id="AnalyzeResult" name="Просмотреть и проанализировать результат"/>
+
+    <bpmn:endEvent id="SuccessEndEvent" name="Прогноз сформирован и сохранён"/>
+    <bpmn:endEvent id="ErrorEndEvent" name="Операция завершена с контролируемой ошибкой"/>
+
+    <bpmn:sequenceFlow id="Flow01" sourceRef="StartEvent" targetRef="OpenForecastForm"/>
+    <bpmn:sequenceFlow id="Flow02" sourceRef="OpenForecastForm" targetRef="SelectProduct"/>
+    <bpmn:sequenceFlow id="Flow03" sourceRef="SelectProduct" targetRef="SetHorizon"/>
+    <bpmn:sequenceFlow id="Flow04" sourceRef="SetHorizon" targetRef="StartForecast"/>
+    <bpmn:sequenceFlow id="Flow05" sourceRef="StartForecast" targetRef="ValidateRequest"/>
+    <bpmn:sequenceFlow id="Flow06" sourceRef="ValidateRequest" targetRef="RequestValidGateway"/>
+
+    <bpmn:sequenceFlow id="Flow07" name="Нет" sourceRef="RequestValidGateway" targetRef="ReturnValidationError"/>
+    <bpmn:sequenceFlow id="Flow08" sourceRef="ReturnValidationError" targetRef="ErrorEndEvent"/>
+
+    <bpmn:sequenceFlow id="Flow09" name="Да" sourceRef="RequestValidGateway" targetRef="LoadSales"/>
+    <bpmn:sequenceFlow id="Flow10" sourceRef="LoadSales" targetRef="CheckHistory"/>
+    <bpmn:sequenceFlow id="Flow11" sourceRef="CheckHistory" targetRef="HistoryEnoughGateway"/>
+
+    <bpmn:sequenceFlow id="Flow12" name="Нет" sourceRef="HistoryEnoughGateway" targetRef="ReturnHistoryError"/>
+    <bpmn:sequenceFlow id="Flow13" sourceRef="ReturnHistoryError" targetRef="ErrorEndEvent"/>
+
+    <bpmn:sequenceFlow id="Flow14" name="Да" sourceRef="HistoryEnoughGateway" targetRef="PrepareMLRequest"/>
+    <bpmn:sequenceFlow id="Flow15" sourceRef="PrepareMLRequest" targetRef="PreprocessData"/>
+    <bpmn:sequenceFlow id="Flow16" sourceRef="PreprocessData" targetRef="RunModel"/>
+    <bpmn:sequenceFlow id="Flow17" sourceRef="RunModel" targetRef="ReturnPrediction"/>
+    <bpmn:sequenceFlow id="Flow18" sourceRef="ReturnPrediction" targetRef="MLSuccessGateway"/>
+
+    <bpmn:sequenceFlow id="Flow19" name="Нет" sourceRef="MLSuccessGateway" targetRef="HandleMLError"/>
+    <bpmn:sequenceFlow id="Flow20" sourceRef="HandleMLError" targetRef="ErrorEndEvent"/>
+
+    <bpmn:sequenceFlow id="Flow21" name="Да" sourceRef="MLSuccessGateway" targetRef="SaveForecast"/>
+    <bpmn:sequenceFlow id="Flow22" sourceRef="SaveForecast" targetRef="ReturnResult"/>
+    <bpmn:sequenceFlow id="Flow23" sourceRef="ReturnResult" targetRef="AnalyzeResult"/>
+    <bpmn:sequenceFlow id="Flow24" sourceRef="AnalyzeResult" targetRef="SuccessEndEvent"/>
+
+  </bpmn:process>
+</bpmn:definitions>

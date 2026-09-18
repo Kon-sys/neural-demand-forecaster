@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    id="Definitions_AS_IS"
+    targetNamespace="http://demand-forecast.local/bpmn">
+
+  <bpmn:process id="DemandForecastAsIs" name="Прогнозирование спроса AS-IS" isExecutable="false">
+
+    <bpmn:startEvent id="StartEvent" name="Возникла потребность в прогнозе"/>
+
+    <bpmn:userTask id="GetData" name="Получить исторические данные"/>
+    <bpmn:userTask id="ValidateData" name="Проверить исходные данные"/>
+
+    <bpmn:exclusiveGateway id="DataValidGateway" name="Данные корректны?"/>
+
+    <bpmn:userTask id="FixData" name="Исправить данные"/>
+    <bpmn:userTask id="PrepareData" name="Подготовить данные"/>
+    <bpmn:userTask id="AnalyzeDemand" name="Проанализировать динамику спроса"/>
+    <bpmn:userTask id="SelectMethod" name="Выбрать метод прогнозирования"/>
+    <bpmn:userTask id="BuildForecast" name="Сформировать прогноз"/>
+    <bpmn:userTask id="EvaluateForecast" name="Оценить результат"/>
+
+    <bpmn:exclusiveGateway id="ForecastAcceptableGateway" name="Результат приемлем?"/>
+
+    <bpmn:userTask id="PrepareReport" name="Подготовить результат"/>
+    <bpmn:userTask id="ReviewForecast" name="Получить и проанализировать прогноз"/>
+
+    <bpmn:endEvent id="EndEvent" name="Прогноз передан для принятия решения"/>
+
+    <bpmn:sequenceFlow id="Flow01" sourceRef="StartEvent" targetRef="GetData"/>
+    <bpmn:sequenceFlow id="Flow02" sourceRef="GetData" targetRef="ValidateData"/>
+    <bpmn:sequenceFlow id="Flow03" sourceRef="ValidateData" targetRef="DataValidGateway"/>
+
+    <bpmn:sequenceFlow id="Flow04" name="Нет" sourceRef="DataValidGateway" targetRef="FixData"/>
+    <bpmn:sequenceFlow id="Flow05" sourceRef="FixData" targetRef="ValidateData"/>
+
+    <bpmn:sequenceFlow id="Flow06" name="Да" sourceRef="DataValidGateway" targetRef="PrepareData"/>
+    <bpmn:sequenceFlow id="Flow07" sourceRef="PrepareData" targetRef="AnalyzeDemand"/>
+    <bpmn:sequenceFlow id="Flow08" sourceRef="AnalyzeDemand" targetRef="SelectMethod"/>
+    <bpmn:sequenceFlow id="Flow09" sourceRef="SelectMethod" targetRef="BuildForecast"/>
+    <bpmn:sequenceFlow id="Flow10" sourceRef="BuildForecast" targetRef="EvaluateForecast"/>
+    <bpmn:sequenceFlow id="Flow11" sourceRef="EvaluateForecast" targetRef="ForecastAcceptableGateway"/>
+
+    <bpmn:sequenceFlow id="Flow12" name="Нет" sourceRef="ForecastAcceptableGateway" targetRef="SelectMethod"/>
+    <bpmn:sequenceFlow id="Flow13" name="Да" sourceRef="ForecastAcceptableGateway" targetRef="PrepareReport"/>
+
+    <bpmn:sequenceFlow id="Flow14" sourceRef="PrepareReport" targetRef="ReviewForecast"/>
+    <bpmn:sequenceFlow id="Flow15" sourceRef="ReviewForecast" targetRef="EndEvent"/>
+
+  </bpmn:process>
+</bpmn:definitions>
