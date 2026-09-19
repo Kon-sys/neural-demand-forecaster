@@ -3,13 +3,36 @@
 hide methods
 hide stereotypes
 
+entity "departments" as departments {
+    * id : BIGINT <<PK>>
+    --
+    name : VARCHAR(150)
+    is_active : BOOLEAN
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+}
+
+entity "positions" as positions {
+    * id : BIGINT <<PK>>
+    --
+    * department_id : BIGINT <<FK>>
+    name : VARCHAR(150)
+    is_active : BOOLEAN
+    created_at : TIMESTAMPTZ
+    updated_at : TIMESTAMPTZ
+}
+
 entity "users" as users {
     * id : BIGINT <<PK>>
     --
     name : VARCHAR(100)
     email : VARCHAR(255) <<UQ>>
     password_hash : VARCHAR(255)
+    avatar_url : VARCHAR(2048)
     role : VARCHAR(20)
+    status : VARCHAR(20)
+    position_id : BIGINT <<FK>>
+    blocked_at : TIMESTAMPTZ
     created_at : TIMESTAMPTZ
     updated_at : TIMESTAMPTZ
 }
@@ -58,22 +81,107 @@ entity "forecast_values" as forecast_values {
     predicted_quantity : NUMERIC(18,4)
 }
 
+departments ||--o{ positions : "содержит"
+positions o|--o{ users : "назначается"
 products ||--o{ sales : "имеет"
 users ||--o{ forecasts : "создаёт"
 products ||--o{ forecasts : "прогнозируется"
 forecasts ||--|{ forecast_values : "содержит"
 
+note right of departments
+UNIQUE INDEX:
+LOWER(name)
+
+is_active = TRUE / FALSE
+
+Физическое удаление
+в штатном MVP
+не используется.
+end note
+
+note right of positions
+department_id NOT NULL
+
+UNIQUE INDEX:
+(
+  department_id,
+  LOWER(name)
+)
+
+Каждая должность
+принадлежит ровно
+одному подразделению.
+
+Должность без
+подразделения
+не допускается.
+end note
+
+note left of users
+position_id допускает NULL.
+
+Подразделение пользователя
+определяется через:
+
+users.position_id
+  -> positions.department_id
+  -> departments.id
+end note
+
+note right of users
+CHECK:
+role IN (
+  'USER',
+  'ADMIN'
+)
+
+CHECK:
+status IN (
+  'ACTIVE',
+  'BLOCKED'
+)
+
+CHECK:
+ACTIVE
+  -> blocked_at IS NULL
+
+BLOCKED
+  -> blocked_at IS NOT NULL
+
+avatar_url содержит
+только URL изображения.
+end note
+
 note right of sales
 UNIQUE:
-(product_id, sale_date)
+(
+  product_id,
+  sale_date
+)
 
 CHECK:
 quantity >= 0
 end note
 
+note right of forecasts
+CHECK:
+forecast_horizon > 0
+
+CHECK:
+status IN (
+  'PENDING',
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED'
+)
+end note
+
 note right of forecast_values
 UNIQUE:
-(forecast_id, forecast_date)
+(
+  forecast_id,
+  forecast_date
+)
 
 CHECK:
 predicted_quantity >= 0

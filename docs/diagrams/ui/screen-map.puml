@@ -1,0 +1,133 @@
+@startuml
+
+left to right direction
+
+actor USER as User
+actor ADMIN as Admin
+
+Admin --|> User
+
+rectangle "Public" {
+    [Login] as Login
+    [Registration] as Register
+}
+
+rectangle "Protected application" {
+
+    [Dashboard] as Dashboard
+
+    [Profile] as Profile
+
+    [Products] as Products
+    [Product Create / Edit] as ProductEdit
+
+    [Sales History] as Sales
+    [CSV Import] as CsvImport
+
+    [Forecast Creation] as ForecastNew
+    [Forecast Result] as ForecastResult
+    [Forecast History] as ForecastHistory
+
+    rectangle "Administration" {
+        [Users Management] as Users
+        [Organization] as Organization
+        [Departments Tab] as Departments
+        [Positions Tab] as Positions
+    }
+}
+
+User --> Login
+User --> Register
+
+Login --> Register : Регистрация
+Register --> Login : Войти
+
+Login --> Dashboard : Успешный вход
+
+Dashboard --> Products
+Dashboard --> Sales
+Dashboard --> ForecastNew
+Dashboard --> ForecastHistory
+
+Dashboard --> Profile : Avatar / аккаунт
+
+Products --> ProductEdit : ADMIN\nСоздать / изменить
+ProductEdit --> Products : Сохранить / отменить
+
+Sales --> CsvImport : ADMIN\nИмпорт CSV
+CsvImport --> Sales : Импорт завершён
+
+Products --> ForecastNew : Построить прогноз
+Sales --> ForecastNew : Построить прогноз
+
+ForecastNew --> ForecastResult : Прогноз создан
+
+ForecastResult --> ForecastNew : Новый прогноз
+ForecastResult --> ForecastHistory : К истории
+
+ForecastHistory --> ForecastResult : Открыть
+
+Profile --> Dashboard : Назад
+
+Admin --> Users
+Admin --> Organization
+Admin --> CsvImport
+Admin --> ProductEdit
+
+Users --> Organization : Управление\nсправочниками
+
+Users --> Users : Редактировать\nроль / статус /\nдолжность
+
+Organization --> Departments : Вкладка
+Organization --> Positions : Вкладка
+
+Departments --> Organization : Сохранить /\nактивировать /\nдеактивировать
+
+Positions --> Organization : Сохранить /\nактивировать /\nдеактивировать
+
+note right of Users
+При редактировании пользователя:
+
+1. выбирается Department
+2. показываются Position
+   выбранного Department
+3. сохраняется position_id
+
+USER не может менять:
+- role
+- status
+- position
+- department
+end note
+
+note right of Positions
+Каждая Position
+обязательно связана
+с одним Department.
+
+Position без Department
+создать нельзя.
+end note
+
+note bottom of Profile
+Пользователь может менять:
+
+- name
+- email
+- avatar
+
+Department / Position /
+Role отображаются
+только для просмотра.
+end note
+
+Dashboard --> Login : Выход
+Products --> Login : Выход
+Sales --> Login : Выход
+ForecastNew --> Login : Выход
+ForecastHistory --> Login : Выход
+Profile --> Login : Выход
+Users --> Login : Выход
+Organization --> Login : Выход
+
+@enduml

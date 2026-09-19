@@ -1,38 +1,78 @@
 @startuml
-skinparam componentStyle rectangle
 
-actor User
-actor Admin
+node "Пользовательское устройство" {
+    artifact "Web Browser" as Browser
+}
 
-component "Frontend\nReact / Vite" as Frontend
-component "Backend\nSpring Boot" as Backend
-component "Auth Module" as Auth
-component "Product Module" as Product
-component "Sale / Import Module" as Sale
-component "Forecast Module" as Forecast
-component "ML Client" as MlClient
-component "ML Service\nFastAPI" as ML
+node "Frontend Environment" {
+    artifact "React / Vite Application" as Frontend
+}
+
+node "Backend Environment" {
+    artifact "Spring Boot Application" as Backend
+}
+
 database "PostgreSQL" as DB
 
-Admin --|> User
+cloud "Object Storage" as ObjectStorage {
+    artifact "Profile Images" as ProfileImages
+}
 
-User --> Frontend
-Admin --> Frontend
+node "ML Environment" {
+    artifact "FastAPI ML Service" as ML
+    artifact "LSTM Model" as Model
+    artifact "Preprocessing Artifacts" as Preprocessing
+}
 
-Frontend --> Backend : REST / JSON\nJWT
+Browser --> Frontend : HTTPS
 
-Backend --> Auth
-Backend --> Product
-Backend --> Sale
-Backend --> Forecast
+Frontend --> Backend : HTTPS\nREST / JSON\nmultipart/form-data\nJWT
 
-Auth --> DB
-Product --> DB
-Sale --> DB
-Forecast --> DB
+Backend --> DB : JDBC / SQL
 
-Forecast --> MlClient
-MlClient --> ML : HTTP / JSON\n/predict
-ML --> MlClient : predictions
+Backend --> ObjectStorage : HTTPS\nObject Storage API
+ObjectStorage --> Backend : avatar URL
+
+Backend --> ML : HTTP / JSON\n/predict
+
+ML --> Model
+ML --> Preprocessing
+
+note right of ObjectStorage
+Хранит бинарные файлы
+фотографий профиля.
+
+PostgreSQL хранит
+только avatar_url.
+
+Секреты доступа находятся
+только на Backend.
+end note
+
+note right of DB
+Основные данные:
+
+users
+departments
+positions
+products
+sales
+forecasts
+forecast_values
+end note
+
+note bottom of Backend
+Backend является
+центральной точкой:
+
+- авторизации;
+- RBAC;
+- проверки ACTIVE/BLOCKED;
+- управления профилями;
+- управления оргструктурой;
+- бизнес-валидации;
+- доступа к Object Storage;
+- взаимодействия с ML.
+end note
 
 @enduml

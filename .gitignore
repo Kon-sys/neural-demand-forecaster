@@ -172,3 +172,7 @@ allure-report/
 # ==================================================
 docker-compose.override.yml
 compose.override.yml
+
+# AI agent tooling
+.agents/
+skills-lock.json

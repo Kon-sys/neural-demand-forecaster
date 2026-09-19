@@ -1,0 +1,24 @@
+:root {
+ --color-canvas:#F5F7FA; --color-surface:#FFFFFF; --color-surface-subtle:#F0F3F7; --color-surface-hover:#EAF0F7; --color-surface-selected:#EAF0FF;
+ --color-text-primary:#182230; --color-text-secondary:#526174; --color-text-muted:#667085; --color-text-inverse:#F8FAFC;
+ --color-border-subtle:#E2E7EE; --color-border-strong:#7B8798;
+ --color-action:#2457D6; --color-action-hover:#1D49B8; --color-action-pressed:#173C98; --color-on-action:#FFFFFF;
+ --color-focus:#2457D6; --color-focus-inverse:#67E8F9;
+ --color-shell:#141C26; --color-shell-hover:#202C3B; --color-shell-selected:#29394D; --color-shell-text:#F5F7FA; --color-shell-muted:#ADB9C9; --color-shell-border:#344356;
+ --color-chart-history:#475569; --color-chart-forecast:#2457D6; --color-chart-grid:#E2E7EE; --color-chart-boundary:#667085; --color-signal:#007F96;
+ --color-success:#176B46; --color-success-bg:#EAF6EF; --color-warning:#865500; --color-warning-bg:#FFF4DB; --color-danger:#B42318; --color-danger-hover:#912018; --color-danger-bg:#FFF0EE;
+ --color-disabled-bg:#EAECF0; --color-disabled-text:#667085; --color-overlay:rgb(16 24 40 / 44%); --color-skeleton-base:#E8EDF3; --color-skeleton-highlight:#F4F6F9;
+ --font-display:'IBM Plex Sans',Arial,sans-serif; --font-body:'IBM Plex Sans',Arial,sans-serif; --font-mono:'IBM Plex Mono',monospace;
+ --font-weight-regular:400; --font-weight-medium:500; --font-weight-semibold:600; --numeric-variant:lining-nums tabular-nums;
+ --text-display:36px; --leading-display:40px; --text-title:28px; --leading-title:36px; --text-section:20px; --leading-section:28px; --text-body:16px; --leading-body:24px; --text-ui:14px; --leading-ui:20px; --text-caption:12px; --leading-caption:16px; --tracking-title:-.02em;
+ --space-0:0; --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px; --space-16:64px;
+ --radius-none:0; --radius-sm:4px; --radius-control:6px; --radius-panel:8px; --radius-overlay:12px; --radius-pill:999px;
+ --border-width:1px; --focus-width:2px; --focus-offset:2px;
+ --shadow-none:none; --shadow-popover:0 4px 16px rgb(16 24 40 / 10%); --shadow-toast:0 6px 20px rgb(16 24 40 / 14%); --shadow-modal:0 16px 48px rgb(16 24 40 / 18%);
+ --duration-instant:0ms; --duration-fast:100ms; --duration-control:140ms; --duration-enter:180ms; --duration-panel:220ms; --duration-chart:360ms; --duration-processing-cycle:1400ms; --duration-skeleton-cycle:1600ms;
+ --ease-standard:cubic-bezier(.2,0,0,1); --ease-enter:cubic-bezier(.16,1,.3,1); --ease-exit:cubic-bezier(.4,0,1,1); --ease-linear:linear;
+ --sidebar-width:216px; --header-height:64px; --content-width:1440px; --control-height:40px; --chart-height:390px; --chart-compact-height:240px;
+ --background:var(--color-canvas); --foreground:var(--color-text-primary); --primary:var(--color-action); --primary-foreground:var(--color-on-action); --secondary:var(--color-surface-subtle); --secondary-foreground:var(--color-text-primary); --muted:var(--color-surface-subtle); --muted-foreground:var(--color-text-muted); --border:var(--color-border-subtle); --input:var(--color-border-strong); --ring:var(--color-focus); --card:var(--color-surface); --card-foreground:var(--color-text-primary); --destructive:var(--color-danger);
+}
+/* Spatial polish extends the frozen tokens without replacing analytical colors. */
+:root{--duration-page:320ms;--duration-reveal:500ms;--depth-perspective:1400px;--depth-backdrop-blur:4px;--shadow-chart-depth:0 12px 28px -20px rgb(16 24 40 / 18%);--shadow-surface-lift:0 14px 32px -20px rgb(16 24 40 / 24%);--color-light-response:rgb(255 255 255 / 7%);--color-core-ambient:rgb(0 127 150 / 9%)}
