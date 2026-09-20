@@ -154,6 +154,9 @@ database/data/
 database/backups/
 postgres-data/
 
+# Local database environment
+database/.env
+
 *.sql.gz
 *.dump
 *.backup
