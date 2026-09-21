@@ -34,3 +34,15 @@ management:
   endpoint:
     health:
       show-details: never
+
+app:
+  security:
+    jwt:
+      secret-base64: ${JWT_SECRET_BASE64}
+      expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+
+  bootstrap-admin:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+    name: ${BOOTSTRAP_ADMIN_NAME:System Administrator}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}

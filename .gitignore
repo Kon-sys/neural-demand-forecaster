@@ -179,3 +179,6 @@ compose.override.yml
 # AI agent tooling
 .agents/
 skills-lock.json
+
+# Backend local environment
+backend/.env
