@@ -26,14 +26,9 @@ public class SecurityConfig {
             RestAuthenticationEntryPoint authenticationEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler
     ) {
-        this.jwtAuthenticationFilter =
-                jwtAuthenticationFilter;
-
-        this.authenticationEntryPoint =
-                authenticationEntryPoint;
-
-        this.accessDeniedHandler =
-                accessDeniedHandler;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -88,6 +83,12 @@ public class SecurityConfig {
 
                                 .requestMatchers("/error")
                                 .permitAll()
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/v1/sales/import"
+                                )
+                                .hasRole("ADMIN")
 
                                 .anyRequest()
                                 .authenticated()
