@@ -153,7 +153,7 @@ database/.env
 ```dotenv
 POSTGRES_DB=demand_forecast
 POSTGRES_USER=forecast_app
-POSTGRES_PASSWORD=forecast_local_password
+POSTGRES_PASSWORD=change_me
 POSTGRES_PORT=5432
 ```
 
