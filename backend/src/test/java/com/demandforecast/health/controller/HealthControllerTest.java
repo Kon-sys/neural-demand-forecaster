@@ -1,4 +1,4 @@
-package com.demandforecast.health;
+package com.demandforecast.health.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package com.demandforecast.health;
+package com.demandforecast.health.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
