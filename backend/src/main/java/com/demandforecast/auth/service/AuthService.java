@@ -17,6 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.demandforecast.organization.model.PositionEntity;
+import com.demandforecast.organization.repository.PositionRepository;
+
 import java.util.Locale;
 
 @Service
@@ -25,20 +28,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final PositionRepository positionRepository;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            PositionRepository positionRepository
     ) {
-        this.userRepository =
-                userRepository;
-
-        this.passwordEncoder =
-                passwordEncoder;
-
-        this.jwtService =
-                jwtService;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.positionRepository = positionRepository;
     }
 
     @Transactional
@@ -163,7 +164,7 @@ public class AuthService {
             );
         }
 
-        return MeResponse.from(user);
+        return createMeResponse(user);
     }
 
     private AuthResponse createAuthResponse(
@@ -176,7 +177,7 @@ public class AuthService {
                 token,
                 "Bearer",
                 jwtService.getExpirationSeconds(),
-                MeResponse.from(user)
+                createMeResponse(user)
         );
     }
 
@@ -186,5 +187,22 @@ public class AuthService {
         return email
                 .trim()
                 .toLowerCase(Locale.ROOT);
+    }
+
+    private MeResponse createMeResponse(
+            UserEntity user
+    ) {
+        PositionEntity position = null;
+
+        if (user.getPositionId() != null) {
+            position = positionRepository
+                    .findById(user.getPositionId())
+                    .orElse(null);
+        }
+
+        return MeResponse.from(
+                user,
+                position
+        );
     }
 }
