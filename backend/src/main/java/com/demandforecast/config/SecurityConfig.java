@@ -90,6 +90,12 @@ public class SecurityConfig {
                                 )
                                 .hasRole("ADMIN")
 
+                                .requestMatchers(
+                                        "/api/v1/departments/**",
+                                        "/api/v1/positions/**"
+                                )
+                                .hasRole("ADMIN")
+
                                 .anyRequest()
                                 .authenticated()
                 )

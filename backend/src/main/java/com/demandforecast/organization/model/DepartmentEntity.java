@@ -53,6 +53,26 @@ public class DepartmentEntity {
     protected DepartmentEntity() {
     }
 
+    public static DepartmentEntity create(
+            String name
+    ) {
+        DepartmentEntity department =
+                new DepartmentEntity();
+
+        department.name = name;
+        department.active = true;
+
+        return department;
+    }
+
+    public void update(
+            String name,
+            boolean active
+    ) {
+        this.name = name;
+        this.active = active;
+    }
+
     public Long getId() {
         return id;
     }

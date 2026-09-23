@@ -16,31 +16,43 @@
 
 Базовый путь:
 
-    /api/v1
+```
+/api/v1
+```
 
 Основным форматом структурированных данных является:
 
-    application/json
+```
+application/json
+```
 
 Для импорта CSV и загрузки фотографии профиля используется:
 
-    multipart/form-data
+```
+multipart/form-data
+```
 
 Даты должны передаваться в формате ISO 8601.
 
 Пример даты:
 
-    2026-09-18
+```
+2026-09-18
+```
 
 Пример даты и времени:
 
-    2026-09-18T14:30:00Z
+```
+2026-09-18T14:30:00Z
+```
 
 ## 3. Авторизация запросов
 
 Защищённые endpoint используют:
 
-    Authorization: Bearer <JWT>
+```
+Authorization: Bearer <JWT>
+```
 
 Backend должен самостоятельно проверять:
 
@@ -52,11 +64,15 @@ Backend должен самостоятельно проверять:
 
 Отсутствие или некорректность токена приводит к:
 
-    401 Unauthorized
+```
+401 Unauthorized
+```
 
 Недостаточные права:
 
-    403 Forbidden
+```
+403 Forbidden
+```
 
 ## 4. API регистрации
 
@@ -66,26 +82,30 @@ Backend должен самостоятельно проверять:
 
 Запрос:
 
-    {
-      "name": "Ivan Ivanov",
-      "email": "ivan@example.com",
-      "password": "StrongPassword123"
-    }
+```
+{  
+  "name": "Ivan Ivanov",  
+  "email": "ivan@example.com",  
+  "password": "StrongPassword123"  
+}
+```
 
 Успешный ответ:
 
-    201 Created
+```
+201 Created  
 
-    {
-      "id": 15,
-      "name": "Ivan Ivanov",
-      "email": "ivan@example.com",
-      "avatarUrl": null,
-      "role": "USER",
-      "status": "ACTIVE",
-      "position": null,
-      "department": null
-    }
+{  
+"id": 15,  
+"name": "Ivan Ivanov",  
+"email": "ivan@example.com",  
+"avatarUrl": null,  
+"role": "USER",  
+"status": "ACTIVE",  
+"position": null,  
+"department": null  
+}
+```
 
 Возможные ошибки:
 
@@ -98,41 +118,51 @@ Backend должен самостоятельно проверять:
 
 Запрос:
 
-    {
-      "email": "ivan@example.com",
-      "password": "StrongPassword123"
-    }
+```
+{  
+  "email": "ivan@example.com",  
+  "password": "StrongPassword123"  
+}
+```
 
 Ответ:
 
-    200 OK
+```
+200 OK  
 
-    {
-      "accessToken": "<jwt>",
-      "tokenType": "Bearer",
-      "user": {
-        "id": 15,
-        "name": "Ivan Ivanov",
-        "email": "ivan@example.com",
-        "avatarUrl": null,
-        "role": "USER",
-        "status": "ACTIVE",
-        "position": null,
-        "department": null
-      }
-    }
+{  
+"accessToken": "<jwt>",  
+"tokenType": "Bearer",  
+"user": {  
+"id": 15,  
+"name": "Ivan Ivanov",  
+"email": "ivan@example.com",  
+"avatarUrl": null,  
+"role": "USER",  
+"status": "ACTIVE",  
+"position": null,  
+"department": null  
+}  
+}
+```
 
 Неверные данные:
 
-    401 Unauthorized
+```
+401 Unauthorized
+```
 
 Заблокированная учётная запись:
 
-    403 Forbidden
+```
+403 Forbidden
+```
 
 Программный код ошибки:
 
-    ACCOUNT_BLOCKED
+```
+USER_BLOCKED
+```
 
 Для MVP отдельный Backend endpoint `logout` не требуется, поскольку JWT используется без серверной HTTP-сессии.
 
@@ -149,29 +179,33 @@ Backend должен самостоятельно проверять:
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Ответ:
 
-    200 OK
-
-    {
-      "id": 15,
-      "name": "Иван Иванов",
-      "email": "ivan@example.com",
-      "avatarUrl": "https://storage.example/users/15/avatar.webp",
-      "role": "USER",
-      "status": "ACTIVE",
-      "position": {
-        "id": 31,
-        "name": "Senior Developer"
-      },
-      "department": {
-        "id": 7,
-        "name": "Отдел разработки"
-      }
-    }
+```
+200 OK  
+  
+{  
+  "id": 15,  
+  "name": "Иван Иванов",  
+  "email": "ivan@example.com",  
+  "avatarUrl": "https://storage.example/users/15/avatar.webp",  
+  "role": "USER",  
+  "status": "ACTIVE",  
+  "position": {  
+    "id": 31,  
+    "name": "Senior Developer"  
+  },  
+  "department": {  
+    "id": 7,  
+    "name": "Отдел разработки"  
+  }  
+}
+```
 
 Если должность ещё не назначена, `position` и `department` имеют значение `null`.
 
@@ -186,31 +220,75 @@ Backend должен самостоятельно проверять:
 
 Запрос:
 
-    {
-      "name": "Иван Иванов",
-      "email": "ivan@example.com"
-    }
+```json
+{
+  "name": "Иван Иванов",
+  "email": "ivan@example.com"
+}
+```
 
-Поля `role`, `status`, `positionId` и `departmentId` self-service endpoint не принимает.
+Поля `role`, `status`, `positionId`, `departmentId` и `avatarUrl` данным endpoint не изменяются.
 
 Ответ:
 
-    200 OK
+```http
+200 OK
+```
+
+```json
+{
+  "id": 15,
+  "name": "Иван Иванов",
+  "email": "ivan@example.com",
+  "avatarUrl": null,
+  "role": "USER",
+  "status": "ACTIVE",
+  "position": {
+    "id": 31,
+    "name": "Senior Developer"
+  },
+  "department": {
+    "id": 7,
+    "name": "Отдел разработки"
+  },
+  "createdAt": "2026-09-23T16:00:00Z",
+  "updatedAt": "2026-09-23T16:15:00Z"
+}
+```
+
+Если должность пользователю не назначена, `position` и `department` имеют значение `null`.
+
+Возможные ошибки:
+
+- `400 Bad Request` — некорректное имя или email;
+- `409 Conflict` — указанный email уже используется другим пользователем.
+
+Программный код конфликта:
+
+```text
+EMAIL_ALREADY_EXISTS
+```
 
 ### POST /api/v1/users/me/avatar
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Content-Type:
 
-    multipart/form-data
+```
+multipart/form-data
+```
 
 Поле:
 
-    file
+```
+file
+```
 
 Backend:
 
@@ -220,13 +298,16 @@ Backend:
 4. сохраняет URL в данных пользователя;
 5. возвращает актуальную ссылку.
 
+
 Ответ:
 
-    200 OK
-
-    {
-      "avatarUrl": "https://storage.example/users/15/avatar.webp"
-    }
+```
+200 OK  
+  
+{  
+  "avatarUrl": "https://storage.example/users/15/avatar.webp"  
+}
+```
 
 Возможные ошибки:
 
@@ -240,7 +321,9 @@ Backend:
 
 Ответ:
 
-    204 No Content
+```
+204 No Content
+```
 
 ## 7. Admin Users API
 
@@ -254,40 +337,44 @@ Backend:
 
 Параметры:
 
-    search
-    role
-    status
-    departmentId
-    positionId
-    page
-    size
+```
+search  
+role  
+status  
+departmentId  
+positionId  
+page  
+size
+```
 
 Ответ:
 
-    {
-      "items": [
-        {
-          "id": 15,
-          "name": "Иван Иванов",
-          "email": "ivan@example.com",
-          "avatarUrl": null,
-          "role": "USER",
-          "status": "ACTIVE",
-          "position": {
-            "id": 31,
-            "name": "Senior Developer"
-          },
-          "department": {
-            "id": 7,
-            "name": "Отдел разработки"
-          }
-        }
-      ],
-      "page": 0,
-      "size": 20,
-      "totalElements": 1,
-      "totalPages": 1
-    }
+```
+{  
+"items": [  
+{  
+"id": 15,  
+"name": "Иван Иванов",  
+"email": "ivan@example.com",  
+"avatarUrl": null,  
+"role": "USER",  
+"status": "ACTIVE",  
+"position": {  
+"id": 31,  
+"name": "Senior Developer"  
+},  
+"department": {  
+"id": 7,  
+"name": "Отдел разработки"  
+}  
+}  
+],  
+"page": 0,  
+"size": 20,  
+"totalElements": 1,  
+"totalPages": 1  
+}
+```
 
 ### GET /api/v1/users/{id}
 
@@ -301,11 +388,13 @@ Backend:
 
 Запрос:
 
-    {
-      "positionId": 31,
-      "role": "USER",
-      "status": "ACTIVE"
-    }
+```
+{  
+  "positionId": 31,  
+  "role": "USER",  
+  "status": "ACTIVE"  
+}
+```
 
 В базе данных подразделение пользователя отдельно не дублируется: оно определяется через `positions.department_id`.
 
@@ -327,118 +416,320 @@ Backend не должен позволять:
 
 Ответ:
 
-    200 OK
+```
+200 OK
+```
 
 ## 8. Departments API
 
-Изменяющие endpoint доступны только `ADMIN`.
+Все endpoint раздела доступны только пользователям с ролью `ADMIN`.
+
+Физическое удаление подразделений в рамках MVP не выполняется. Для исключения подразделения из дальнейшего использования применяется деактивация через `isActive = false`.
 
 ### GET /api/v1/departments
 
 Доступ:
 
-    ADMIN
+```text
+ADMIN
+```
 
 Параметры:
 
-    active
-    search
+- `active` — фильтр по признаку активности;
+- `search` — поиск по наименованию.
 
-Возвращает справочник подразделений.
+Ответ:
+
+```http
+200 OK
+```
+
+```json
+[
+  {
+    "id": 7,
+    "name": "Отдел разработки",
+    "isActive": true
+  }
+]
+```
 
 ### POST /api/v1/departments
 
 Доступ:
 
-    ADMIN
+```text
+ADMIN
+```
 
 Запрос:
 
-    {
-      "name": "Отдел разработки"
-    }
+```json
+{
+  "name": "Отдел разработки"
+}
+```
 
-Создаёт активное подразделение.
+Новое подразделение создаётся активным.
 
 Ответ:
 
-    201 Created
+```http
+201 Created
+```
+
+```json
+{
+  "id": 7,
+  "name": "Отдел разработки",
+  "isActive": true
+}
+```
+
+Возможные ошибки:
+
+- `400 Bad Request` — некорректное наименование;
+- `409 Conflict` — подразделение с таким наименованием уже существует.
+
+Программный код конфликта:
+
+```text
+DEPARTMENT_ALREADY_EXISTS
+```
 
 ### PATCH /api/v1/departments/{id}
 
 Доступ:
 
-    ADMIN
+```text
+ADMIN
+```
 
-Запрос может изменять:
+Запрос:
 
-    {
-      "name": "Отдел разработки",
-      "isActive": true
-    }
+```json
+{
+  "name": "Отдел разработки",
+  "isActive": true
+}
+```
 
-Деактивация не удаляет подразделение и не разрушает существующие назначения.
+Endpoint позволяет:
 
-Новые назначения в деактивированное подразделение запрещены.
+- изменить наименование подразделения;
+- активировать подразделение;
+- деактивировать подразделение.
+
+Деактивация подразделения:
+
+- не удаляет подразделение;
+- не удаляет относящиеся к нему должности;
+- не снимает существующие назначения пользователей;
+- запрещает новые назначения пользователей на должности этого подразделения.
+
+Ответ:
+
+```http
+200 OK
+```
+
+```json
+{
+  "id": 7,
+  "name": "Отдел разработки",
+  "isActive": true
+}
+```
+
+Возможные ошибки:
+
+- `404 Not Found` — подразделение не найдено;
+- `409 Conflict` — новое наименование уже используется другим подразделением.
 
 ## 9. Positions API
 
-Изменяющие endpoint доступны только `ADMIN`.
+Все endpoint раздела доступны только пользователям с ролью `ADMIN`.
+
+Физическое удаление должностей в рамках MVP не выполняется. Для исключения должности из новых назначений применяется деактивация через `isActive = false`.
 
 ### GET /api/v1/positions
 
 Доступ:
 
-    ADMIN
+```text
+ADMIN
+```
 
 Параметры:
 
-    departmentId
-    active
-    search
+- `departmentId` — фильтр по подразделению;
+- `active` — фильтр по признаку активности;
+- `search` — поиск по наименованию должности.
 
-Для назначения пользователя Frontend запрашивает активные должности выбранного подразделения.
+Для назначения пользователя Frontend запрашивает активные должности выбранного подразделения:
+
+```http
+GET /api/v1/positions?departmentId=7&active=true
+```
+
+Ответ:
+
+```http
+200 OK
+```
+
+```json
+[
+  {
+    "id": 31,
+    "name": "Senior Developer",
+    "isActive": true,
+    "department": {
+      "id": 7,
+      "name": "Отдел разработки"
+    }
+  }
+]
+```
 
 ### POST /api/v1/positions
 
 Доступ:
 
-    ADMIN
+```text
+ADMIN
+```
 
 Запрос:
 
-    {
-      "name": "Senior Developer",
-      "departmentId": 7
-    }
+```json
+{
+  "name": "Senior Developer",
+  "departmentId": 7
+}
+```
 
 `departmentId` обязателен.
 
-Создание должности без подразделения запрещено.
+Создание должности запрещено, если:
+
+- подразделение не существует;
+- подразделение неактивно;
+- в выбранном подразделении уже существует должность с таким наименованием.
 
 Ответ:
 
-    201 Created
+```http
+201 Created
+```
+
+```json
+{
+  "id": 31,
+  "name": "Senior Developer",
+  "isActive": true,
+  "department": {
+    "id": 7,
+    "name": "Отдел разработки"
+  }
+}
+```
+
+Возможные ошибки:
+
+- `404 Not Found` — подразделение не найдено;
+- `409 Conflict` — подразделение неактивно либо должность с таким наименованием уже существует в выбранном подразделении.
+
+Программные коды:
+
+```text
+DEPARTMENT_INACTIVE
+POSITION_ALREADY_EXISTS
+```
 
 ### PATCH /api/v1/positions/{id}
 
 Доступ:
 
-    ADMIN
+```text
+ADMIN
+```
 
-Запрос может изменять:
+Запрос:
 
-    {
-      "name": "Senior Developer",
-      "departmentId": 7,
-      "isActive": true
-    }
+```json
+{
+  "name": "Senior Developer",
+  "departmentId": 7,
+  "isActive": true
+}
+```
+
+Endpoint позволяет:
+
+- изменить наименование должности;
+- изменить подразделение;
+- активировать должность;
+- деактивировать должность.
 
 Каждая должность в каждый момент времени относится ровно к одному подразделению.
 
-Если должность уже назначена пользователям, изменение её `departmentId` должно завершаться `409 Conflict`. Администратор сначала переназначает пользователей, после чего может перенести должность в другое подразделение.
+Если должность уже назначена хотя бы одному пользователю, изменение её `departmentId` запрещено.
 
-Деактивация должности не удаляет существующие назначения, но запрещает новые.
+Ответ в этом случае:
+
+```http
+409 Conflict
+```
+
+Программный код:
+
+```text
+POSITION_IN_USE
+```
+
+Деактивация должности:
+
+- не удаляет существующие назначения пользователей;
+- не снимает должность с уже назначенных пользователей;
+- запрещает новые назначения этой должности.
+
+Для нового назначения одновременно должны быть активны:
+
+- сама должность;
+- подразделение, которому принадлежит должность.
+
+Ответ:
+
+```http
+200 OK
+```
+
+```json
+{
+  "id": 31,
+  "name": "Senior Developer",
+  "isActive": true,
+  "department": {
+    "id": 7,
+    "name": "Отдел разработки"
+  }
+}
+```
+
+Возможные ошибки:
+
+- `404 Not Found` — должность или новое подразделение не найдены;
+- `409 Conflict` — конфликт уникальности, неактивное подразделение или попытка переноса используемой должности.
+
+Программные коды:
+
+```text
+POSITION_ALREADY_EXISTS
+DEPARTMENT_INACTIVE
+POSITION_IN_USE
+```
 
 ## 10. Products API
 
@@ -446,8 +737,10 @@ Backend не должен позволять:
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Назначение:
 
@@ -455,33 +748,39 @@ Backend не должен позволять:
 
 Параметры:
 
-    search
-    page
-    size
+```
+search  
+page  
+size
+```
 
 Пример ответа:
 
-    {
-      "items": [
-        {
-          "id": 42,
-          "sku": "SKU-00042",
-          "name": "Товар 42",
-          "category": "Категория A"
-        }
-      ],
-      "page": 0,
-      "size": 20,
-      "totalElements": 1,
-      "totalPages": 1
-    }
+```
+{  
+  "items": [  
+    {  
+      "id": 42,  
+      "sku": "SKU-00042",  
+      "name": "Товар 42",  
+      "category": "Категория A"  
+    }  
+  ],  
+  "page": 0,  
+  "size": 20,  
+  "totalElements": 1,  
+  "totalPages": 1  
+}
+```
 
 ### GET /api/v1/products/{id}
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Возвращает отдельный товар.
 
@@ -489,25 +788,33 @@ Backend не должен позволять:
 
 Доступ:
 
-    ADMIN
+```
+ADMIN
+```
 
 Запрос:
 
-    {
-      "sku": "SKU-00042",
-      "name": "Товар 42",
-      "category": "Категория A"
-    }
+```
+{  
+"sku": "SKU-00042",  
+"name": "Товар 42",  
+"category": "Категория A"  
+}
+```
 
 Ответ:
 
-    201 Created
+```
+201 Created
+```
 
 ### PUT /api/v1/products/{id}
 
 Доступ:
 
-    ADMIN
+```
+ADMIN
+```
 
 Изменяет существующий товар.
 
@@ -515,7 +822,9 @@ Backend не должен позволять:
 
 Доступ:
 
-    ADMIN
+```
+ADMIN
+```
 
 Удаляет товар при отсутствии ограничений целостности.
 
@@ -531,37 +840,45 @@ Backend не должен позволять:
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Параметры:
 
-    productId
-    dateFrom
-    dateTo
-    page
-    size
+```
+productId  
+dateFrom  
+dateTo  
+page  
+size
+```
 
 Пример:
 
-    GET /api/v1/sales?productId=42&dateFrom=2026-01-01&dateTo=2026-06-30&page=0&size=50
+```
+GET /api/v1/sales?productId=42&dateFrom=2026-01-01&dateTo=2026-06-30&page=0&size=50
+```
 
 Ответ:
 
-    {
-      "items": [
-        {
-          "id": 1001,
-          "productId": 42,
-          "date": "2026-01-01",
-          "quantity": 125
-        }
-      ],
-      "page": 0,
-      "size": 50,
-      "totalElements": 180,
-      "totalPages": 4
-    }
+```
+{  
+  "items": [  
+    {  
+      "id": 1001,  
+      "productId": 42,  
+      "date": "2026-01-01",  
+      "quantity": 125  
+    }  
+  ],  
+  "page": 0,  
+  "size": 50,  
+  "totalElements": 180,  
+  "totalPages": 4  
+}
+```
 
 ## 12. CSV Import API
 
@@ -569,30 +886,38 @@ Backend не должен позволять:
 
 Доступ:
 
-    ADMIN
+```
+ADMIN
+```
 
 Content-Type:
 
-    multipart/form-data
+```
+multipart/form-data
+```
 
 Поле:
 
-    file
+```
+file
+```
 
 Пример результата:
 
-    {
-      "totalRows": 1000,
-      "importedRows": 970,
-      "skippedRows": 30,
-      "errors": [
-        {
-          "row": 15,
-          "code": "UNKNOWN_PRODUCT",
-          "message": "Товар с SKU SKU-999 не найден"
-        }
-      ]
-    }
+```
+{  
+  "totalRows": 1000,  
+  "importedRows": 970,  
+  "skippedRows": 30,  
+  "errors": [  
+    {  
+      "row": 15,  
+      "code": "UNKNOWN_PRODUCT",  
+      "message": "Товар с SKU SKU-999 не найден"  
+    }  
+  ]  
+}
+```
 
 Возможные ответы:
 
@@ -607,15 +932,19 @@ Content-Type:
 
 Минимально необходимы:
 
-    product_sku
-    date
-    quantity
+```
+product_sku  
+date  
+quantity
+```
 
 Пример:
 
-    product_sku,date,quantity
-    SKU-00042,2026-01-01,125
-    SKU-00042,2026-01-02,130
+```
+product_sku,date,quantity  
+SKU-00042,2026-01-01,125  
+SKU-00042,2026-01-02,130
+```
 
 Если структура файла не соответствует контракту, импорт должен завершаться контролируемой ошибкой.
 
@@ -625,8 +954,10 @@ Content-Type:
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Назначение:
 
@@ -634,10 +965,12 @@ Content-Type:
 
 Запрос:
 
-    {
-      "productId": 42,
-      "forecastHorizon": 14
-    }
+```
+{  
+  "productId": 42,  
+  "forecastHorizon": 14  
+}
+```
 
 Backend:
 
@@ -649,40 +982,43 @@ Backend:
 6. сохраняет ForecastValue;
 7. возвращает результат.
 
+
 Для MVP используется синхронный сценарий REST-вызова.
 
 Frontend отображает состояние загрузки во время выполнения запроса.
 
 Ответ:
 
-    201 Created
+```
+201 Created  
 
-    {
-      "id": 501,
-      "product": {
-        "id": 42,
-        "sku": "SKU-00042",
-        "name": "Товар 42"
-      },
-      "forecastHorizon": 14,
-      "createdAt": "2026-09-18T14:30:00Z",
-      "modelVersion": "lstm-1.0.0",
-      "values": [
-        {
-          "date": "2026-09-19",
-          "value": 126.4
-        },
-        {
-          "date": "2026-09-20",
-          "value": 130.1
-        }
-      ],
-      "metrics": {
-        "mae": 8.2,
-        "rmse": 10.4,
-        "mape": 6.8
-      }
-    }
+{  
+"id": 501,  
+"product": {  
+"id": 42,  
+"sku": "SKU-00042",  
+"name": "Товар 42"  
+},  
+"forecastHorizon": 14,  
+"createdAt": "2026-09-18T14:30:00Z",  
+"modelVersion": "lstm-1.0.0",  
+"values": [  
+{  
+"date": "2026-09-19",  
+"value": 126.4  
+},  
+{  
+"date": "2026-09-20",  
+"value": 130.1  
+}  
+],  
+"metrics": {  
+"mae": 8.2,  
+"rmse": 10.4,  
+"mape": 6.8  
+}  
+}
+```
 
 Возможные ошибки:
 
@@ -698,8 +1034,10 @@ Frontend отображает состояние загрузки во врем�
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Возвращает:
 
@@ -714,7 +1052,9 @@ Frontend отображает состояние загрузки во врем�
 
 Ответ:
 
-    200 OK
+```
+200 OK
+```
 
 ## 16. История прогнозов
 
@@ -722,39 +1062,47 @@ Frontend отображает состояние загрузки во врем�
 
 Доступ:
 
-    USER
-    ADMIN
+```
+USER  
+ADMIN
+```
 
 Параметры:
 
-    productId
-    dateFrom
-    dateTo
-    page
-    size
+```
+productId  
+dateFrom  
+dateTo  
+page  
+size
+```
 
 Пример:
 
-    GET /api/v1/forecasts?productId=42&page=0&size=20
+```
+GET /api/v1/forecasts?productId=42&page=0&size=20
+```
 
 Ответ:
 
-    {
-      "items": [
-        {
-          "id": 501,
-          "productId": 42,
-          "productName": "Товар 42",
-          "forecastHorizon": 14,
-          "createdAt": "2026-09-18T14:30:00Z",
-          "modelVersion": "lstm-1.0.0"
-        }
-      ],
-      "page": 0,
-      "size": 20,
-      "totalElements": 1,
-      "totalPages": 1
-    }
+```
+{  
+"items": [  
+{  
+"id": 501,  
+"productId": 42,  
+"productName": "Товар 42",  
+"forecastHorizon": 14,  
+"createdAt": "2026-09-18T14:30:00Z",  
+"modelVersion": "lstm-1.0.0"  
+}  
+],  
+"page": 0,  
+"size": 20,  
+"totalElements": 1,  
+"totalPages": 1  
+}
+```
 
 ## 17. Backend Health Check
 
@@ -768,9 +1116,11 @@ Endpoint не должен раскрывать секретную конфиг�
 
 Пример:
 
-    {
-      "status": "UP"
-    }
+```
+{  
+  "status": "UP"  
+}
+```
 
 ## 18. ML API
 
@@ -784,11 +1134,13 @@ Frontend не обращается к нему напрямую.
 
 Пример:
 
-    {
-      "status": "UP",
-      "modelLoaded": true,
-      "modelVersion": "lstm-1.0.0"
-    }
+```
+{  
+"status": "UP",  
+"modelLoaded": true,  
+"modelVersion": "lstm-1.0.0"  
+}
+```
 
 ### POST /predict
 
@@ -796,57 +1148,65 @@ Frontend не обращается к нему напрямую.
 
 Логический запрос:
 
-    {
-      "requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",
-      "forecastHorizon": 14,
-      "series": [
-        {
-          "date": "2026-08-01",
-          "value": 120
-        },
-        {
-          "date": "2026-08-02",
-          "value": 125
-        }
-      ]
-    }
+```
+{  
+  "requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",  
+  "forecastHorizon": 14,  
+  "series": [  
+    {  
+      "date": "2026-08-01",  
+      "value": 120  
+    },  
+    {  
+      "date": "2026-08-02",  
+      "value": 125  
+    }  
+  ]  
+}
+```
 
 Если модели необходимы дополнительные признаки, контракт может быть расширен после экспериментального этапа.
 
 Успешный ответ:
 
-    {
-      "requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",
-      "modelVersion": "lstm-1.0.0",
-      "predictions": [
-        {
-          "date": "2026-09-19",
-          "value": 126.4
-        },
-        {
-          "date": "2026-09-20",
-          "value": 130.1
-        }
-      ]
-    }
+```
+{  
+"requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",  
+"modelVersion": "lstm-1.0.0",  
+"predictions": [  
+{  
+"date": "2026-09-19",  
+"value": 126.4  
+},  
+{  
+"date": "2026-09-20",  
+"value": 130.1  
+}  
+]  
+}
+```
 
 ## 19. Ошибки ML API
 
 Основные коды:
 
-    INVALID_INPUT
-    INSUFFICIENT_HISTORY
-    MODEL_NOT_LOADED
-    PREPROCESSING_ERROR
-    INFERENCE_ERROR
-    INTERNAL_ERROR
+```
+INVALID_INPUT  
+INSUFFICIENT_HISTORY  
+MODEL_NOT_LOADED  
+PREPROCESSING_ERROR  
+INFERENCE_ERROR  
+INTERNAL_ERROR
+```
 
 Пример:
 
-    {
-      "code": "INSUFFICIENT_HISTORY",
-      "message": "Недостаточно исторических данных"
-    }
+```
+{  
+"code": "INSUFFICIENT_HISTORY",  
+"message": "Недостаточно исторических данных"  
+}
+```
 
 Backend должен преобразовывать ML-ошибку в соответствующую прикладную API-ошибку.
 
@@ -856,28 +1216,32 @@ Backend должен преобразовывать ML-ошибку в соот�
 
 Пример:
 
-    {
-      "code": "VALIDATION_ERROR",
-      "message": "Переданные данные содержат ошибки",
-      "details": [
-        {
-          "field": "forecastHorizon",
-          "message": "Значение должно быть больше нуля"
-        }
-      ],
-      "timestamp": "2026-09-18T14:30:00Z",
-      "path": "/api/v1/forecasts"
-    }
+```
+{  
+  "code": "VALIDATION_ERROR",  
+  "message": "Переданные данные содержат ошибки",  
+  "details": [  
+    {  
+      "field": "forecastHorizon",  
+      "message": "Значение должно быть больше нуля"  
+    }  
+  ],  
+  "timestamp": "2026-09-18T14:30:00Z",  
+  "path": "/api/v1/forecasts"  
+}
+```
 
 Поля:
 
-| Поле | Назначение |
-| --- | --- |
-| code | Стабильный программный код ошибки |
-| message | Понятное описание |
-| details | Дополнительные сведения |
-| timestamp | Время |
-| path | Endpoint |
+
+| Поле  | Назначение                                            |
+|-----------|-----------------------------------------------------------------|
+| code      | Стабильный программный код ошибки |
+| message   | Понятное описание                               |
+| details   | Дополнительные сведения                   |
+| timestamp | Время                                                      |
+| path      | Endpoint                                                        |
+
 
 `details` может отсутствовать, если дополнительная информация не требуется.
 
@@ -885,72 +1249,82 @@ Backend должен преобразовывать ML-ошибку в соот�
 
 Рекомендуемые программные коды:
 
-    VALIDATION_ERROR
-    INVALID_CREDENTIALS
-    UNAUTHORIZED
-    ACCESS_DENIED
-    RESOURCE_NOT_FOUND
-    USER_ALREADY_EXISTS
-    ACCOUNT_BLOCKED
-    LAST_ACTIVE_ADMIN
-    SELF_ADMIN_RESTRICTION
-    DEPARTMENT_ALREADY_EXISTS
-    DEPARTMENT_INACTIVE
-    POSITION_ALREADY_EXISTS
-    POSITION_INACTIVE
-    POSITION_IN_USE
-    INVALID_POSITION_DEPARTMENT
-    AVATAR_INVALID_TYPE
-    AVATAR_TOO_LARGE
-    STORAGE_UNAVAILABLE
-    SKU_ALREADY_EXISTS
-    PRODUCT_IN_USE
-    CSV_INVALID_FORMAT
-    CSV_VALIDATION_ERROR
-    FILE_TOO_LARGE
-    INSUFFICIENT_HISTORY
-    ML_SERVICE_UNAVAILABLE
-    ML_PREDICTION_ERROR
-    INTERNAL_ERROR
+```
+VALIDATION_ERROR  
+INVALID_CREDENTIALS  
+UNAUTHORIZED  
+ACCESS_DENIED  
+RESOURCE_NOT_FOUND  
+EMAIL_ALREADY_EXISTS  
+USER_BLOCKED  
+LAST_ACTIVE_ADMIN  
+SELF_ADMIN_RESTRICTION  
+DEPARTMENT_ALREADY_EXISTS  
+DEPARTMENT_INACTIVE  
+POSITION_ALREADY_EXISTS  
+POSITION_INACTIVE  
+POSITION_IN_USE  
+INVALID_POSITION_DEPARTMENT  
+AVATAR_INVALID_TYPE  
+AVATAR_TOO_LARGE  
+STORAGE_UNAVAILABLE  
+SKU_ALREADY_EXISTS  
+PRODUCT_IN_USE  
+CSV_INVALID_FORMAT  
+CSV_VALIDATION_ERROR  
+FILE_TOO_LARGE  
+INSUFFICIENT_HISTORY  
+ML_SERVICE_UNAVAILABLE  
+ML_PREDICTION_ERROR  
+INTERNAL_ERROR
+```
 
 ## 22. HTTP-коды
 
-| HTTP | Назначение |
-| --- | --- |
-| 200 | Успешное получение или операция |
-| 201 | Ресурс создан |
-| 204 | Успешная операция без тела ответа |
-| 400 | Ошибка структуры или параметров запроса |
-| 401 | Пользователь не авторизован |
-| 403 | Недостаточно прав |
-| 404 | Ресурс не найден |
-| 409 | Конфликт данных |
-| 413 | Превышен размер файла |
-| 422 | Данные синтаксически допустимы, но непригодны для операции |
-| 500 | Внутренняя ошибка Backend |
-| 502 | Ошибка ответа зависимого компонента |
-| 503 | Зависимый компонент недоступен |
+
+| HTTP | Назначение                                                                                          |
+|------|---------------------------------------------------------------------------------------------------------------|
+| 200  | Успешное получение или операция                                                   |
+| 201  | Ресурс создан                                                                                     |
+| 204  | Успешная операция без тела ответа                                                |
+| 400  | Ошибка структуры или параметров запроса                                    |
+| 401  | Пользователь не авторизован                                                          |
+| 403  | Недостаточно прав                                                                             |
+| 404  | Ресурс не найден                                                                                |
+| 409  | Конфликт данных                                                                                 |
+| 413  | Превышен размер файла                                                                      |
+| 422  | Данные синтаксически допустимы, но непригодны для операции |
+| 500  | Внутренняя ошибка Backend                                                                     |
+| 502  | Ошибка ответа зависимого компонента                                           |
+| 503  | Зависимый компонент недоступен                                                    |
+
 
 ## 23. Пагинация
 
 Списковые endpoint должны использовать единообразные параметры:
 
-    page
-    size
+```
+page  
+size
+```
 
 Нумерация страниц начинается с:
 
-    0
+```
+0
+```
 
 Формат:
 
-    {
-      "items": [],
-      "page": 0,
-      "size": 20,
-      "totalElements": 0,
-      "totalPages": 0
-    }
+```
+{  
+  "items": [],  
+  "page": 0,  
+  "size": 20,  
+  "totalElements": 0,  
+  "totalPages": 0  
+}
+```
 
 ## 24. Валидация
 
@@ -992,7 +1366,9 @@ Timeout должен задаваться через конфигурацию, �
 
 Backend API использует:
 
-    /api/v1
+```
+/api/v1
+```
 
 Несовместимое изменение публичного контракта должно приводить к созданию новой версии API.
 
@@ -1015,3 +1391,5 @@ FastAPI автоматически формирует OpenAPI-документа
 - HTTP-кодов;
 - правил авторизации;
 - структуры ошибок.
+
+ 
