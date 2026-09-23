@@ -66,6 +66,30 @@ public class PositionEntity {
     protected PositionEntity() {
     }
 
+    public static PositionEntity create(
+            DepartmentEntity department,
+            String name
+    ) {
+        PositionEntity position =
+                new PositionEntity();
+
+        position.department = department;
+        position.name = name;
+        position.active = true;
+
+        return position;
+    }
+
+    public void update(
+            DepartmentEntity department,
+            String name,
+            boolean active
+    ) {
+        this.department = department;
+        this.name = name;
+        this.active = active;
+    }
+
     public Long getId() {
         return id;
     }
