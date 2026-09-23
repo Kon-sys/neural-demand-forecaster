@@ -4,6 +4,8 @@ import com.demandforecast.organization.model.PositionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
+
 public interface PositionRepository
         extends JpaRepository<PositionEntity, Long>,
         JpaSpecificationExecutor<PositionEntity> {
@@ -17,5 +19,9 @@ public interface PositionRepository
             Long departmentId,
             String name,
             Long id
+    );
+
+    List<PositionEntity> findAllByDepartment_Id(
+            Long departmentId
     );
 }
