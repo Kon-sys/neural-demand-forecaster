@@ -18,7 +18,12 @@ import java.time.Instant;
 public class GlobalExceptionHandler {
 
     private static final Logger log =
-            LoggerFactory.getLogger(GlobalExceptionHandler.class);
+            LoggerFactory.getLogger(
+                    GlobalExceptionHandler.class
+            );
+
+    private static final String AVATAR_PATH =
+            "/api/v1/users/me/avatar";
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(
@@ -84,22 +89,23 @@ public class GlobalExceptionHandler {
             MissingServletRequestPartException exception,
             HttpServletRequest request
     ) {
-        ApiErrorResponse response =
-                new ApiErrorResponse(
-                        Instant.now(),
-                        HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST
-                                .getReasonPhrase(),
-                        "MISSING_MULTIPART_PART",
-                        "Required multipart field '"
-                                + exception.getRequestPartName()
-                                + "' is missing",
-                        request.getRequestURI()
-                );
+        if (isAvatarRequest(request)) {
+            return buildError(
+                    HttpStatus.BAD_REQUEST,
+                    "AVATAR_INVALID_TYPE",
+                    "Avatar image is required",
+                    request
+            );
+        }
 
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "MISSING_MULTIPART_PART",
+                "Required multipart field '"
+                        + exception.getRequestPartName()
+                        + "' is missing",
+                request
+        );
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -107,20 +113,21 @@ public class GlobalExceptionHandler {
             MaxUploadSizeExceededException exception,
             HttpServletRequest request
     ) {
-        ApiErrorResponse response =
-                new ApiErrorResponse(
-                        Instant.now(),
-                        HttpStatus.PAYLOAD_TOO_LARGE.value(),
-                        HttpStatus.PAYLOAD_TOO_LARGE
-                                .getReasonPhrase(),
-                        "FILE_TOO_LARGE",
-                        "Uploaded file exceeds the allowed size",
-                        request.getRequestURI()
-                );
+        if (isAvatarRequest(request)) {
+            return buildError(
+                    HttpStatus.PAYLOAD_TOO_LARGE,
+                    "AVATAR_TOO_LARGE",
+                    "Avatar image must not exceed 2 MB",
+                    request
+            );
+        }
 
-        return ResponseEntity
-                .status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(response);
+        return buildError(
+                HttpStatus.PAYLOAD_TOO_LARGE,
+                "FILE_TOO_LARGE",
+                "Uploaded file exceeds the allowed size",
+                request
+        );
     }
 
     @ExceptionHandler(MultipartException.class)
@@ -128,20 +135,21 @@ public class GlobalExceptionHandler {
             MultipartException exception,
             HttpServletRequest request
     ) {
-        ApiErrorResponse response =
-                new ApiErrorResponse(
-                        Instant.now(),
-                        HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST
-                                .getReasonPhrase(),
-                        "INVALID_MULTIPART_REQUEST",
-                        "Multipart request is invalid",
-                        request.getRequestURI()
-                );
+        if (isAvatarRequest(request)) {
+            return buildError(
+                    HttpStatus.BAD_REQUEST,
+                    "AVATAR_INVALID_TYPE",
+                    "Avatar multipart request is invalid",
+                    request
+            );
+        }
 
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_MULTIPART_REQUEST",
+                "Multipart request is invalid",
+                request
+        );
     }
 
     @ExceptionHandler(Exception.class)
@@ -157,21 +165,40 @@ public class GlobalExceptionHandler {
                 exception.getMessage()
         );
 
+        return buildError(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "INTERNAL_SERVER_ERROR",
+                "An unexpected error occurred",
+                request
+        );
+    }
+
+    private ResponseEntity<ApiErrorResponse> buildError(
+            HttpStatus status,
+            String code,
+            String message,
+            HttpServletRequest request
+    ) {
         ApiErrorResponse response =
                 new ApiErrorResponse(
                         Instant.now(),
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                                .getReasonPhrase(),
-                        "INTERNAL_SERVER_ERROR",
-                        "An unexpected error occurred",
+                        status.value(),
+                        status.getReasonPhrase(),
+                        code,
+                        message,
                         request.getRequestURI()
                 );
 
         return ResponseEntity
-                .status(
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                )
+                .status(status)
                 .body(response);
+    }
+
+    private boolean isAvatarRequest(
+            HttpServletRequest request
+    ) {
+        return AVATAR_PATH.equals(
+                request.getRequestURI()
+        );
     }
 }

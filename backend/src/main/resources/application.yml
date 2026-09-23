@@ -20,6 +20,11 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
 
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+
 server:
   port: ${SERVER_PORT:8080}
 
@@ -46,3 +51,9 @@ app:
     name: ${BOOTSTRAP_ADMIN_NAME:System Administrator}
     email: ${BOOTSTRAP_ADMIN_EMAIL:}
     password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+
+  storage:
+    cloudinary:
+      cloud-name: ${CLOUDINARY_CLOUD_NAME}
+      api-key: ${CLOUDINARY_API_KEY}
+      api-secret: ${CLOUDINARY_API_SECRET}
