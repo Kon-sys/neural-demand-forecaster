@@ -83,27 +83,27 @@ Backend должен самостоятельно проверять:
 Запрос:
 
 ```
-{  
-  "name": "Ivan Ivanov",  
-  "email": "ivan@example.com",  
-  "password": "StrongPassword123"  
+{      
+  "name": "Ivan Ivanov",      
+  "email": "ivan@example.com",      
+  "password": "StrongPassword123"      
 }
 ```
 
 Успешный ответ:
 
 ```
-201 Created  
+201 Created      
 
-{  
-"id": 15,  
-"name": "Ivan Ivanov",  
-"email": "ivan@example.com",  
-"avatarUrl": null,  
-"role": "USER",  
-"status": "ACTIVE",  
-"position": null,  
-"department": null  
+{      
+"id": 15,      
+"name": "Ivan Ivanov",      
+"email": "ivan@example.com",      
+"avatarUrl": null,      
+"role": "USER",      
+"status": "ACTIVE",      
+"position": null,      
+"department": null      
 }
 ```
 
@@ -119,30 +119,30 @@ Backend должен самостоятельно проверять:
 Запрос:
 
 ```
-{  
-  "email": "ivan@example.com",  
-  "password": "StrongPassword123"  
+{      
+  "email": "ivan@example.com",      
+  "password": "StrongPassword123"      
 }
 ```
 
 Ответ:
 
 ```
-200 OK  
+200 OK      
 
-{  
-"accessToken": "<jwt>",  
-"tokenType": "Bearer",  
-"user": {  
-"id": 15,  
-"name": "Ivan Ivanov",  
-"email": "ivan@example.com",  
-"avatarUrl": null,  
-"role": "USER",  
-"status": "ACTIVE",  
-"position": null,  
-"department": null  
-}  
+{      
+"accessToken": "<jwt>",      
+"tokenType": "Bearer",      
+"user": {      
+"id": 15,      
+"name": "Ivan Ivanov",      
+"email": "ivan@example.com",      
+"avatarUrl": null,      
+"role": "USER",      
+"status": "ACTIVE",      
+"position": null,      
+"department": null      
+}      
 }
 ```
 
@@ -180,30 +180,30 @@ USER_BLOCKED
 Доступ:
 
 ```
-USER  
+USER      
 ADMIN
 ```
 
 Ответ:
 
 ```
-200 OK  
-  
-{  
-  "id": 15,  
-  "name": "Иван Иванов",  
-  "email": "ivan@example.com",  
-  "avatarUrl": "https://storage.example/users/15/avatar.webp",  
-  "role": "USER",  
-  "status": "ACTIVE",  
-  "position": {  
-    "id": 31,  
-    "name": "Senior Developer"  
-  },  
-  "department": {  
-    "id": 7,  
-    "name": "Отдел разработки"  
-  }  
+200 OK      
+      
+{      
+  "id": 15,      
+  "name": "Иван Иванов",      
+  "email": "ivan@example.com",      
+  "avatarUrl": "https://storage.example/users/15/avatar.webp",      
+  "role": "USER",      
+  "status": "ACTIVE",      
+  "position": {      
+    "id": 31,      
+    "name": "Senior Developer"      
+  },      
+  "department": {      
+    "id": 7,      
+    "name": "Отдел разработки"      
+  }      
 }
 ```
 
@@ -221,9 +221,9 @@ ADMIN
 Запрос:
 
 ```json
-{
-  "name": "Иван Иванов",
-  "email": "ivan@example.com"
+{    
+"name": "Иван Иванов",    
+"email": "ivan@example.com"    
 }
 ```
 
@@ -236,23 +236,23 @@ ADMIN
 ```
 
 ```json
-{
-  "id": 15,
-  "name": "Иван Иванов",
-  "email": "ivan@example.com",
-  "avatarUrl": null,
-  "role": "USER",
-  "status": "ACTIVE",
-  "position": {
-    "id": 31,
-    "name": "Senior Developer"
-  },
-  "department": {
-    "id": 7,
-    "name": "Отдел разработки"
-  },
-  "createdAt": "2026-09-23T16:00:00Z",
-  "updatedAt": "2026-09-23T16:15:00Z"
+{    
+"id": 15,    
+"name": "Иван Иванов",    
+"email": "ivan@example.com",    
+"avatarUrl": null,    
+"role": "USER",    
+"status": "ACTIVE",    
+"position": {    
+"id": 31,    
+"name": "Senior Developer"    
+},    
+"department": {    
+"id": 7,    
+"name": "Отдел разработки"    
+},    
+"createdAt": "2026-09-23T16:00:00Z",    
+"updatedAt": "2026-09-23T16:15:00Z"    
 }
 ```
 
@@ -271,49 +271,120 @@ EMAIL_ALREADY_EXISTS
 
 ### POST /api/v1/users/me/avatar
 
+Назначение:
+
+загрузка или замена фотографии профиля текущего пользователя.
+
 Доступ:
 
-```
-USER  
+```text
+USER
 ADMIN
 ```
 
 Content-Type:
 
-```
+```text
 multipart/form-data
 ```
 
 Поле:
 
-```
+```text
 file
+```
+
+Поддерживаемые форматы изображений:
+
+- `image/jpeg`;
+- `image/png`;
+- `image/webp`.
+
+Максимальный размер файла:
+
+```text
+2 MB
 ```
 
 Backend:
 
-1. проверяет фактический MIME-тип и размер файла;
-2. сохраняет изображение в объектном хранилище;
-3. получает URL;
-4. сохраняет URL в данных пользователя;
-5. возвращает актуальную ссылку.
+1. проверяет наличие файла;
+2. проверяет размер файла;
+3. проверяет допустимый MIME-тип изображения;
+4. формирует идентификатор изображения текущего пользователя;
+5. загружает или перезаписывает изображение во внешнем облачном хранилище медиафайлов Cloudinary;
+6. получает URL изображения;
+7. сохраняет URL в поле `users.avatar_url`;
+8. возвращает обновлённый URL клиенту.
 
+Для пользователя используется стабильный идентификатор изображения вида:
+
+```text
+demand-forecast/users/{userId}/avatar
+```
+
+Повторная загрузка фотографии заменяет предыдущий аватар пользователя и не создаёт новое логическое назначение аватара в базе данных.
+
+В PostgreSQL хранится только URL изображения:
+
+```text
+users.avatar_url
+```
+
+Сам бинарный файл изображения в PostgreSQL не хранится.
 
 Ответ:
 
+```http
+200 OK
 ```
-200 OK  
-  
-{  
-  "avatarUrl": "https://storage.example/users/15/avatar.webp"  
+
+```json
+{
+  "avatarUrl": "https://res.cloudinary.com/example/image/upload/..."
 }
 ```
 
 Возможные ошибки:
 
-- `400 Bad Request` — неподдерживаемый тип файла;
-- `413 Payload Too Large` — превышен допустимый размер;
-- `503 Service Unavailable` — объектное хранилище недоступно.
+- `400 Bad Request` — файл отсутствует либо имеет неподдерживаемый тип;
+- `413 Payload Too Large` — размер файла превышает допустимое ограничение;
+- `503 Service Unavailable` — внешнее хранилище изображений временно недоступно.
+
+Программные коды ошибок:
+
+```text
+AVATAR_INVALID_TYPE
+AVATAR_TOO_LARGE
+STORAGE_UNAVAILABLE
+```
+
+### DELETE /api/v1/users/me/avatar
+
+Назначение:
+
+удаление текущей фотографии профиля пользователя.
+
+Доступ:
+
+```text
+USER
+ADMIN
+```
+
+Backend:
+
+1. определяет идентификатор аватара текущего пользователя;
+2. удаляет изображение из Cloudinary, если оно существует;
+3. очищает поле `users.avatar_url`.
+
+Отсутствие установленного аватара не приводит к ошибке: после выполнения операции профиль пользователя остаётся без фотографии.
+
+Ответ:
+
+```http
+204 No Content
+```
 
 ### DELETE /api/v1/users/me/avatar
 
@@ -338,41 +409,41 @@ Backend:
 Параметры:
 
 ```
-search  
-role  
-status  
-departmentId  
-positionId  
-page  
+search      
+role      
+status      
+departmentId      
+positionId      
+page      
 size
 ```
 
 Ответ:
 
 ```
-{  
-"items": [  
-{  
-"id": 15,  
-"name": "Иван Иванов",  
-"email": "ivan@example.com",  
-"avatarUrl": null,  
-"role": "USER",  
-"status": "ACTIVE",  
-"position": {  
-"id": 31,  
-"name": "Senior Developer"  
-},  
-"department": {  
-"id": 7,  
-"name": "Отдел разработки"  
-}  
-}  
-],  
-"page": 0,  
-"size": 20,  
-"totalElements": 1,  
-"totalPages": 1  
+{      
+"items": [      
+{      
+"id": 15,      
+"name": "Иван Иванов",      
+"email": "ivan@example.com",      
+"avatarUrl": null,      
+"role": "USER",      
+"status": "ACTIVE",      
+"position": {      
+"id": 31,      
+"name": "Senior Developer"      
+},      
+"department": {      
+"id": 7,      
+"name": "Отдел разработки"      
+}      
+}      
+],      
+"page": 0,      
+"size": 20,      
+"totalElements": 1,      
+"totalPages": 1      
 }
 ```
 
@@ -389,10 +460,10 @@ size
 Запрос:
 
 ```
-{  
-  "positionId": 31,  
-  "role": "USER",  
-  "status": "ACTIVE"  
+{      
+  "positionId": 31,      
+  "role": "USER",      
+  "status": "ACTIVE"      
 }
 ```
 
@@ -400,37 +471,49 @@ size
 
 В пользовательском интерфейсе администратор сначала выбирает подразделение, а затем должность из этого подразделения. В запрос передаётся выбранная `positionId`.
 
-Backend перед сохранением проверяет:
+Для снятия текущей должности с пользователя администратор явно передаёт:
 
-- существование должности;
-- активность должности;
-- активность подразделения должности;
-- административные ограничения роли и статуса.
+```json
+{  
+"positionId": null  
+}  
 
-Backend не должен позволять:
+Отсутствие поля positionId в PATCH-запросе означает, что текущее назначение должности изменять не требуется.  
 
-- администратору заблокировать самого себя;
-- администратору снять с самого себя роль `ADMIN`;
-- заблокировать последнего активного администратора;
-- изменить роль последнего активного администратора на `USER`.
+Подразделение пользователя отдельно не назначается и не хранится в users: оно определяется через подразделение выбранной должности.  
 
-Ответ:
+Backend перед сохранением проверяет:  
 
+- существование должности;  
+- активность должности;  
+- активность подразделения должности;  
+- административные ограничения роли и статуса.  
+
+Backend не должен позволять:  
+
+- администратору заблокировать самого себя;  
+- администратору снять с самого себя роль `ADMIN`;  
+- заблокировать последнего активного администратора;  
+- изменить роль последнего активного администратора на `USER`.  
+
+Ответ:  
 ```
+
 200 OK
+
 ```
 
-## 8. Departments API
+## 8. Departments API  
 
-Все endpoint раздела доступны только пользователям с ролью `ADMIN`.
+Все endpoint раздела доступны только пользователям с ролью `ADMIN`.  
 
-Физическое удаление подразделений в рамках MVP не выполняется. Для исключения подразделения из дальнейшего использования применяется деактивация через `isActive = false`.
+Физическое удаление подразделений в рамках MVP не выполняется. Для исключения подразделения из дальнейшего использования применяется деактивация через `isActive = false`.  
 
-### GET /api/v1/departments
+### GET /api/v1/departments  
 
-Доступ:
+Доступ:  
 
-```text
+```text  
 ADMIN
 ```
 
@@ -446,12 +529,12 @@ ADMIN
 ```
 
 ```json
-[
-  {
-    "id": 7,
-    "name": "Отдел разработки",
-    "isActive": true
-  }
+[    
+  {    
+    "id": 7,    
+    "name": "Отдел разработки",    
+    "isActive": true    
+  }    
 ]
 ```
 
@@ -466,8 +549,8 @@ ADMIN
 Запрос:
 
 ```json
-{
-  "name": "Отдел разработки"
+{    
+  "name": "Отдел разработки"    
 }
 ```
 
@@ -480,10 +563,10 @@ ADMIN
 ```
 
 ```json
-{
-  "id": 7,
-  "name": "Отдел разработки",
-  "isActive": true
+{    
+  "id": 7,    
+  "name": "Отдел разработки",    
+  "isActive": true    
 }
 ```
 
@@ -509,9 +592,9 @@ ADMIN
 Запрос:
 
 ```json
-{
-  "name": "Отдел разработки",
-  "isActive": true
+{    
+"name": "Отдел разработки",    
+"isActive": true    
 }
 ```
 
@@ -535,10 +618,10 @@ Endpoint позволяет:
 ```
 
 ```json
-{
-  "id": 7,
-  "name": "Отдел разработки",
-  "isActive": true
+{    
+"id": 7,    
+"name": "Отдел разработки",    
+"isActive": true    
 }
 ```
 
@@ -580,16 +663,16 @@ GET /api/v1/positions?departmentId=7&active=true
 ```
 
 ```json
-[
-  {
-    "id": 31,
-    "name": "Senior Developer",
-    "isActive": true,
-    "department": {
-      "id": 7,
-      "name": "Отдел разработки"
-    }
-  }
+[    
+{    
+"id": 31,    
+"name": "Senior Developer",    
+"isActive": true,    
+"department": {    
+"id": 7,    
+"name": "Отдел разработки"    
+}    
+}    
 ]
 ```
 
@@ -604,9 +687,9 @@ ADMIN
 Запрос:
 
 ```json
-{
-  "name": "Senior Developer",
-  "departmentId": 7
+{    
+"name": "Senior Developer",    
+"departmentId": 7    
 }
 ```
 
@@ -625,14 +708,14 @@ ADMIN
 ```
 
 ```json
-{
-  "id": 31,
-  "name": "Senior Developer",
-  "isActive": true,
-  "department": {
-    "id": 7,
-    "name": "Отдел разработки"
-  }
+{    
+"id": 31,    
+"name": "Senior Developer",    
+"isActive": true,    
+"department": {    
+"id": 7,    
+"name": "Отдел разработки"    
+}    
 }
 ```
 
@@ -644,7 +727,7 @@ ADMIN
 Программные коды:
 
 ```text
-DEPARTMENT_INACTIVE
+DEPARTMENT_INACTIVE    
 POSITION_ALREADY_EXISTS
 ```
 
@@ -659,10 +742,10 @@ ADMIN
 Запрос:
 
 ```json
-{
-  "name": "Senior Developer",
-  "departmentId": 7,
-  "isActive": true
+{    
+  "name": "Senior Developer",    
+  "departmentId": 7,    
+  "isActive": true    
 }
 ```
 
@@ -707,14 +790,14 @@ POSITION_IN_USE
 ```
 
 ```json
-{
-  "id": 31,
-  "name": "Senior Developer",
-  "isActive": true,
-  "department": {
-    "id": 7,
-    "name": "Отдел разработки"
-  }
+{    
+  "id": 31,    
+  "name": "Senior Developer",    
+  "isActive": true,    
+  "department": {    
+    "id": 7,    
+    "name": "Отдел разработки"    
+  }    
 }
 ```
 
@@ -726,8 +809,8 @@ POSITION_IN_USE
 Программные коды:
 
 ```text
-POSITION_ALREADY_EXISTS
-DEPARTMENT_INACTIVE
+POSITION_ALREADY_EXISTS    
+DEPARTMENT_INACTIVE    
 POSITION_IN_USE
 ```
 
@@ -738,7 +821,7 @@ POSITION_IN_USE
 Доступ:
 
 ```
-USER  
+USER      
 ADMIN
 ```
 
@@ -749,27 +832,27 @@ ADMIN
 Параметры:
 
 ```
-search  
-page  
+search      
+page      
 size
 ```
 
 Пример ответа:
 
 ```
-{  
-  "items": [  
-    {  
-      "id": 42,  
-      "sku": "SKU-00042",  
-      "name": "Товар 42",  
-      "category": "Категория A"  
-    }  
-  ],  
-  "page": 0,  
-  "size": 20,  
-  "totalElements": 1,  
-  "totalPages": 1  
+{      
+  "items": [      
+    {      
+      "id": 42,      
+      "sku": "SKU-00042",      
+      "name": "Товар 42",      
+      "category": "Категория A"      
+    }      
+  ],      
+  "page": 0,      
+  "size": 20,      
+  "totalElements": 1,      
+  "totalPages": 1      
 }
 ```
 
@@ -778,7 +861,7 @@ size
 Доступ:
 
 ```
-USER  
+USER      
 ADMIN
 ```
 
@@ -795,10 +878,10 @@ ADMIN
 Запрос:
 
 ```
-{  
-"sku": "SKU-00042",  
-"name": "Товар 42",  
-"category": "Категория A"  
+{      
+"sku": "SKU-00042",      
+"name": "Товар 42",      
+"category": "Категория A"      
 }
 ```
 
@@ -841,17 +924,17 @@ ADMIN
 Доступ:
 
 ```
-USER  
+USER      
 ADMIN
 ```
 
 Параметры:
 
 ```
-productId  
-dateFrom  
-dateTo  
-page  
+productId      
+dateFrom      
+dateTo      
+page      
 size
 ```
 
@@ -864,19 +947,19 @@ GET /api/v1/sales?productId=42&dateFrom=2026-01-01&dateTo=2026-06-30&page=0&size
 Ответ:
 
 ```
-{  
-  "items": [  
-    {  
-      "id": 1001,  
-      "productId": 42,  
-      "date": "2026-01-01",  
-      "quantity": 125  
-    }  
-  ],  
-  "page": 0,  
-  "size": 50,  
-  "totalElements": 180,  
-  "totalPages": 4  
+{      
+  "items": [      
+    {      
+      "id": 1001,      
+      "productId": 42,      
+      "date": "2026-01-01",      
+      "quantity": 125      
+    }      
+  ],      
+  "page": 0,      
+  "size": 50,      
+  "totalElements": 180,      
+  "totalPages": 4      
 }
 ```
 
@@ -905,17 +988,17 @@ file
 Пример результата:
 
 ```
-{  
-  "totalRows": 1000,  
-  "importedRows": 970,  
-  "skippedRows": 30,  
-  "errors": [  
-    {  
-      "row": 15,  
-      "code": "UNKNOWN_PRODUCT",  
-      "message": "Товар с SKU SKU-999 не найден"  
-    }  
-  ]  
+{      
+  "totalRows": 1000,      
+  "importedRows": 970,      
+  "skippedRows": 30,      
+  "errors": [      
+    {      
+      "row": 15,      
+      "code": "UNKNOWN_PRODUCT",      
+      "message": "Товар с SKU SKU-999 не найден"      
+    }      
+  ]      
 }
 ```
 
@@ -933,16 +1016,16 @@ file
 Минимально необходимы:
 
 ```
-product_sku  
-date  
+product_sku      
+date      
 quantity
 ```
 
 Пример:
 
 ```
-product_sku,date,quantity  
-SKU-00042,2026-01-01,125  
+product_sku,date,quantity      
+SKU-00042,2026-01-01,125      
 SKU-00042,2026-01-02,130
 ```
 
@@ -955,7 +1038,7 @@ SKU-00042,2026-01-02,130
 Доступ:
 
 ```
-USER  
+USER      
 ADMIN
 ```
 
@@ -966,9 +1049,9 @@ ADMIN
 Запрос:
 
 ```
-{  
-  "productId": 42,  
-  "forecastHorizon": 14  
+{      
+  "productId": 42,      
+  "forecastHorizon": 14      
 }
 ```
 
@@ -990,33 +1073,33 @@ Frontend отображает состояние загрузки во врем�
 Ответ:
 
 ```
-201 Created  
+201 Created      
 
-{  
-"id": 501,  
-"product": {  
-"id": 42,  
-"sku": "SKU-00042",  
-"name": "Товар 42"  
-},  
-"forecastHorizon": 14,  
-"createdAt": "2026-09-18T14:30:00Z",  
-"modelVersion": "lstm-1.0.0",  
-"values": [  
-{  
-"date": "2026-09-19",  
-"value": 126.4  
-},  
-{  
-"date": "2026-09-20",  
-"value": 130.1  
-}  
-],  
-"metrics": {  
-"mae": 8.2,  
-"rmse": 10.4,  
-"mape": 6.8  
-}  
+{      
+"id": 501,      
+"product": {      
+"id": 42,      
+"sku": "SKU-00042",      
+"name": "Товар 42"      
+},      
+"forecastHorizon": 14,      
+"createdAt": "2026-09-18T14:30:00Z",      
+"modelVersion": "lstm-1.0.0",      
+"values": [      
+{      
+"date": "2026-09-19",      
+"value": 126.4      
+},      
+{      
+"date": "2026-09-20",      
+"value": 130.1      
+}      
+],      
+"metrics": {      
+"mae": 8.2,      
+"rmse": 10.4,      
+"mape": 6.8      
+}      
 }
 ```
 
@@ -1035,7 +1118,7 @@ Frontend отображает состояние загрузки во врем�
 Доступ:
 
 ```
-USER  
+USER      
 ADMIN
 ```
 
@@ -1063,17 +1146,17 @@ ADMIN
 Доступ:
 
 ```
-USER  
+USER      
 ADMIN
 ```
 
 Параметры:
 
 ```
-productId  
-dateFrom  
-dateTo  
-page  
+productId      
+dateFrom      
+dateTo      
+page      
 size
 ```
 
@@ -1086,21 +1169,21 @@ GET /api/v1/forecasts?productId=42&page=0&size=20
 Ответ:
 
 ```
-{  
-"items": [  
-{  
-"id": 501,  
-"productId": 42,  
-"productName": "Товар 42",  
-"forecastHorizon": 14,  
-"createdAt": "2026-09-18T14:30:00Z",  
-"modelVersion": "lstm-1.0.0"  
-}  
-],  
-"page": 0,  
-"size": 20,  
-"totalElements": 1,  
-"totalPages": 1  
+{      
+"items": [      
+{      
+"id": 501,      
+"productId": 42,      
+"productName": "Товар 42",      
+"forecastHorizon": 14,      
+"createdAt": "2026-09-18T14:30:00Z",      
+"modelVersion": "lstm-1.0.0"      
+}      
+],      
+"page": 0,      
+"size": 20,      
+"totalElements": 1,      
+"totalPages": 1      
 }
 ```
 
@@ -1117,8 +1200,8 @@ Endpoint не должен раскрывать секретную конфиг�
 Пример:
 
 ```
-{  
-  "status": "UP"  
+{      
+  "status": "UP"      
 }
 ```
 
@@ -1135,10 +1218,10 @@ Frontend не обращается к нему напрямую.
 Пример:
 
 ```
-{  
-"status": "UP",  
-"modelLoaded": true,  
-"modelVersion": "lstm-1.0.0"  
+{      
+"status": "UP",      
+"modelLoaded": true,      
+"modelVersion": "lstm-1.0.0"      
 }
 ```
 
@@ -1149,19 +1232,19 @@ Frontend не обращается к нему напрямую.
 Логический запрос:
 
 ```
-{  
-  "requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",  
-  "forecastHorizon": 14,  
-  "series": [  
-    {  
-      "date": "2026-08-01",  
-      "value": 120  
-    },  
-    {  
-      "date": "2026-08-02",  
-      "value": 125  
-    }  
-  ]  
+{      
+  "requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",      
+  "forecastHorizon": 14,      
+  "series": [      
+    {      
+      "date": "2026-08-01",      
+      "value": 120      
+    },      
+    {      
+      "date": "2026-08-02",      
+      "value": 125      
+    }      
+  ]      
 }
 ```
 
@@ -1170,19 +1253,19 @@ Frontend не обращается к нему напрямую.
 Успешный ответ:
 
 ```
-{  
-"requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",  
-"modelVersion": "lstm-1.0.0",  
-"predictions": [  
-{  
-"date": "2026-09-19",  
-"value": 126.4  
-},  
-{  
-"date": "2026-09-20",  
-"value": 130.1  
-}  
-]  
+{      
+"requestId": "6a26df31-9e62-4c27-82d1-82a9c4f8a530",      
+"modelVersion": "lstm-1.0.0",      
+"predictions": [      
+{      
+"date": "2026-09-19",      
+"value": 126.4      
+},      
+{      
+"date": "2026-09-20",      
+"value": 130.1      
+}      
+]      
 }
 ```
 
@@ -1191,20 +1274,20 @@ Frontend не обращается к нему напрямую.
 Основные коды:
 
 ```
-INVALID_INPUT  
-INSUFFICIENT_HISTORY  
-MODEL_NOT_LOADED  
-PREPROCESSING_ERROR  
-INFERENCE_ERROR  
+INVALID_INPUT      
+INSUFFICIENT_HISTORY      
+MODEL_NOT_LOADED      
+PREPROCESSING_ERROR      
+INFERENCE_ERROR      
 INTERNAL_ERROR
 ```
 
 Пример:
 
 ```
-{  
-"code": "INSUFFICIENT_HISTORY",  
-"message": "Недостаточно исторических данных"  
+{      
+"code": "INSUFFICIENT_HISTORY",      
+"message": "Недостаточно исторических данных"      
 }
 ```
 
@@ -1217,17 +1300,17 @@ Backend должен преобразовывать ML-ошибку в соот�
 Пример:
 
 ```
-{  
-  "code": "VALIDATION_ERROR",  
-  "message": "Переданные данные содержат ошибки",  
-  "details": [  
-    {  
-      "field": "forecastHorizon",  
-      "message": "Значение должно быть больше нуля"  
-    }  
-  ],  
-  "timestamp": "2026-09-18T14:30:00Z",  
-  "path": "/api/v1/forecasts"  
+{      
+  "code": "VALIDATION_ERROR",      
+  "message": "Переданные данные содержат ошибки",      
+  "details": [      
+    {      
+      "field": "forecastHorizon",      
+      "message": "Значение должно быть больше нуля"      
+    }      
+  ],      
+  "timestamp": "2026-09-18T14:30:00Z",      
+  "path": "/api/v1/forecasts"      
 }
 ```
 
@@ -1250,32 +1333,32 @@ Backend должен преобразовывать ML-ошибку в соот�
 Рекомендуемые программные коды:
 
 ```
-VALIDATION_ERROR  
-INVALID_CREDENTIALS  
-UNAUTHORIZED  
-ACCESS_DENIED  
-RESOURCE_NOT_FOUND  
-EMAIL_ALREADY_EXISTS  
-USER_BLOCKED  
-LAST_ACTIVE_ADMIN  
-SELF_ADMIN_RESTRICTION  
-DEPARTMENT_ALREADY_EXISTS  
-DEPARTMENT_INACTIVE  
-POSITION_ALREADY_EXISTS  
-POSITION_INACTIVE  
-POSITION_IN_USE  
-INVALID_POSITION_DEPARTMENT  
-AVATAR_INVALID_TYPE  
-AVATAR_TOO_LARGE  
-STORAGE_UNAVAILABLE  
-SKU_ALREADY_EXISTS  
-PRODUCT_IN_USE  
-CSV_INVALID_FORMAT  
-CSV_VALIDATION_ERROR  
-FILE_TOO_LARGE  
-INSUFFICIENT_HISTORY  
-ML_SERVICE_UNAVAILABLE  
-ML_PREDICTION_ERROR  
+VALIDATION_ERROR      
+INVALID_CREDENTIALS      
+UNAUTHORIZED      
+ACCESS_DENIED      
+RESOURCE_NOT_FOUND      
+EMAIL_ALREADY_EXISTS      
+USER_BLOCKED      
+LAST_ACTIVE_ADMIN      
+SELF_ADMIN_RESTRICTION      
+DEPARTMENT_ALREADY_EXISTS      
+DEPARTMENT_INACTIVE      
+POSITION_ALREADY_EXISTS      
+POSITION_INACTIVE      
+POSITION_IN_USE      
+INVALID_POSITION_DEPARTMENT      
+AVATAR_INVALID_TYPE      
+AVATAR_TOO_LARGE      
+STORAGE_UNAVAILABLE      
+SKU_ALREADY_EXISTS      
+PRODUCT_IN_USE      
+CSV_INVALID_FORMAT      
+CSV_VALIDATION_ERROR      
+FILE_TOO_LARGE      
+INSUFFICIENT_HISTORY      
+ML_SERVICE_UNAVAILABLE      
+ML_PREDICTION_ERROR      
 INTERNAL_ERROR
 ```
 
@@ -1304,7 +1387,7 @@ INTERNAL_ERROR
 Списковые endpoint должны использовать единообразные параметры:
 
 ```
-page  
+page      
 size
 ```
 
@@ -1317,12 +1400,12 @@ size
 Формат:
 
 ```
-{  
-  "items": [],  
-  "page": 0,  
-  "size": 20,  
-  "totalElements": 0,  
-  "totalPages": 0  
+{      
+  "items": [],      
+  "page": 0,      
+  "size": 20,      
+  "totalElements": 0,      
+  "totalPages": 0      
 }
 ```
 
