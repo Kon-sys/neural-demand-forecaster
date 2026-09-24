@@ -4,7 +4,7 @@ import { useStore } from '../../app/store-context'
 import { Button } from '../../components/ui/button'
 import { Badge, Field, PageHeader, SectionTitle } from '../../components/ui/primitives'
 import { Overlay } from '../../components/ui/overlay'
-import { delay } from '../../lib/format'
+import { delay } from '@/shared/lib/format'
 
 type Tab = 'departments' | 'positions'
 type EditState =

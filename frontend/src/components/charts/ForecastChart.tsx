@@ -1,11 +1,11 @@
-import { useReducedMotionSetting } from '../../hooks/motionPreference'
+import { useReducedMotionSetting } from '@/shared/hooks/motionPreference'
 import { useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Forecast } from '../../mocks/forecasts'
 import { salesFor } from '../../mocks/sales'
-import { shortDate, number } from '../../lib/format'
+import { shortDate, number } from '@/shared/lib/format'
 interface Point { date: string; history?: number; forecast?: number }
 export function ForecastChart({ forecast, compact = false, reveal = false }: { forecast: Forecast; compact?: boolean; reveal?: boolean }) {
  const reduce = useReducedMotionSetting(); const [animateForecast, setAnimateForecast] = useState(reveal); const [point, setPoint] = useState<number | null>(null)

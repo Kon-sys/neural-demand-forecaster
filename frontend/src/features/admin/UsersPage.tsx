@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/button'
 import { Badge, Field, PageHeader } from '../../components/ui/primitives'
 import { Overlay } from '../../components/ui/overlay'
 import { EmptyState } from '../../components/feedback/States'
-import { delay } from '../../lib/format'
+import { delay } from '@/shared/lib/format'
 
 type UserEditDraft = {
     id: string

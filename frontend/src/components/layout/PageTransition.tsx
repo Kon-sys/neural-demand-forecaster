@@ -1,4 +1,4 @@
-import { useReducedMotionSetting } from '../../hooks/motionPreference'
+import { useReducedMotionSetting } from '@/shared/hooks/motionPreference'
 import { useState } from 'react'
 import { useLocation, useOutlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'

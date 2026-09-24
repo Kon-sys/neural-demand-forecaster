@@ -1,5 +1,8 @@
-const ACCESS_TOKEN_KEY =
+﻿const ACCESS_TOKEN_KEY =
     'demand-forecast-access-token'
+
+export const SESSION_EXPIRED_EVENT =
+    'demand-forecast-session-expired'
 
 export function getAccessToken(): string | null {
     if (typeof window === 'undefined') {

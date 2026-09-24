@@ -5,7 +5,7 @@ import { useStore } from '../../app/store-context'
 import { Button } from '../../components/ui/button'
 import { Field, LinkButton, PageHeader } from '../../components/ui/primitives'
 import { ErrorState } from '../../components/feedback/States'
-import { delay } from '../../lib/format'
+import { delay } from '@/shared/lib/format'
 export function ProductForm() {
  const { id } = useParams(); const { products, saveProduct, notify } = useStore(); const product = products.find(p => p.id === id); const navigate = useNavigate()
  const [sku, setSku] = useState(product?.sku ?? ''); const [name, setName] = useState(product?.name ?? ''); const [category, setCategory] = useState(product?.category ?? ''); const [errors, setErrors] = useState<Record<string, string>>({}); const [busy, setBusy] = useState(false)

@@ -1,4 +1,4 @@
-import { useReducedMotionSetting } from '../../hooks/motionPreference'
+import { useReducedMotionSetting } from '@/shared/hooks/motionPreference'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'motion/react'

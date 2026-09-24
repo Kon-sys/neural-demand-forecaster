@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/button'
 import { PageHeader, LinkButton } from '../../components/ui/primitives'
 import { Overlay } from '../../components/ui/overlay'
 import { EmptyState, StateBoundary } from '../../components/feedback/States'
-import { delay } from '../../lib/format'
+import { delay } from '@/shared/lib/format'
 export function ProductsPage() {
  const { products, user, deleteProduct, notify } = useStore(); const [query, setQuery] = useState(''); const [deleting, setDeleting] = useState<Product | null>(null); const [busy, setBusy] = useState(false); const admin = user?.role === 'ADMIN'
  const filtered = products.filter(p => `${p.name} ${p.sku}`.toLocaleLowerCase('ru').includes(query.toLocaleLowerCase('ru').trim()))

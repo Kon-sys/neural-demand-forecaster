@@ -1,8 +1,11 @@
-import {
+﻿import {
     clearAccessToken,
     getAccessToken,
-} from '../auth/token-storage'
-import { env } from '../config/env'
+    SESSION_EXPIRED_EVENT,
+} from './token-storage'
+import {
+    env,
+} from '@/shared/config/env'
 import {
     ApiError,
     type ApiErrorPayload,
@@ -16,7 +19,10 @@ type QueryValue =
     | undefined
 
 export type QueryParams =
-    Record<string, QueryValue>
+    Record<
+        string,
+        QueryValue
+    >
 
 interface ApiRequestOptions
     extends Omit<
@@ -52,8 +58,13 @@ function buildUrl(
     }
 
     for (
-        const [key, value]
-        of Object.entries(query)
+        const [
+            key,
+            value,
+        ]
+        of Object.entries(
+        query,
+    )
         ) {
         if (
             value === null
@@ -105,7 +116,8 @@ function toApiError(
     payload: unknown,
 ): ApiError {
     if (
-        typeof payload === 'object'
+        typeof payload ===
+        'object'
         && payload !== null
     ) {
         const body =
@@ -113,18 +125,22 @@ function toApiError(
 
         return new ApiError(
             response.status,
+
             body.code
             || `HTTP_${response.status}`,
+
             body.message
             || response.statusText
             || 'Request failed',
+
             body.path
             || null,
         )
     }
 
     if (
-        typeof payload === 'string'
+        typeof payload ===
+        'string'
         && payload.trim()
     ) {
         return new ApiError(
@@ -144,7 +160,8 @@ function toApiError(
 
 export async function apiRequest<T>(
     path: string,
-    options: ApiRequestOptions = {},
+    options:
+    ApiRequestOptions = {},
 ): Promise<T> {
     const {
         body,
@@ -153,8 +170,10 @@ export async function apiRequest<T>(
         auth = true,
         timeoutMs =
             DEFAULT_TIMEOUT_MS,
-        headers: sourceHeaders,
-        signal: sourceSignal,
+        headers:
+            sourceHeaders,
+        signal:
+            sourceSignal,
         ...requestInit
     } = options
 
@@ -187,14 +206,18 @@ export async function apiRequest<T>(
     let requestBody =
         body
 
-    if (json !== undefined) {
+    if (
+        json !== undefined
+    ) {
         headers.set(
             'Content-Type',
             'application/json',
         )
 
         requestBody =
-            JSON.stringify(json)
+            JSON.stringify(
+                json,
+            )
     }
 
     const controller =
@@ -202,18 +225,23 @@ export async function apiRequest<T>(
 
     const timeout =
         window.setTimeout(
-            () => controller.abort(),
+            () =>
+                controller.abort(),
             timeoutMs,
         )
 
     const abortFromSource =
-        () => controller.abort()
+        () =>
+            controller.abort()
 
-    sourceSignal?.addEventListener(
-        'abort',
-        abortFromSource,
-        { once: true },
-    )
+    sourceSignal
+        ?.addEventListener(
+            'abort',
+            abortFromSource,
+            {
+                once: true,
+            },
+        )
 
     try {
         const response =
@@ -224,8 +252,12 @@ export async function apiRequest<T>(
                 ),
                 {
                     ...requestInit,
+
                     headers,
-                    body: requestBody,
+
+                    body:
+                    requestBody,
+
                     signal:
                     controller.signal,
                 },
@@ -239,8 +271,15 @@ export async function apiRequest<T>(
         if (!response.ok) {
             if (
                 response.status === 401
+                && auth
             ) {
                 clearAccessToken()
+
+                window.dispatchEvent(
+                    new Event(
+                        SESSION_EXPIRED_EVENT,
+                    ),
+                )
             }
 
             throw toApiError(
@@ -259,7 +298,8 @@ export async function apiRequest<T>(
 
         if (
             controller.signal.aborted
-            && !sourceSignal?.aborted
+            && !sourceSignal
+                ?.aborted
         ) {
             throw new ApiError(
                 0,

@@ -1,4 +1,4 @@
-function normalizeBaseUrl(value: string): string {
+﻿function normalizeBaseUrl(value: string): string {
     return value.trim().replace(/\/+$/, '')
 }
 
