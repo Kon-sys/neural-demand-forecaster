@@ -41,6 +41,11 @@ management:
       show-details: never
 
 app:
+  ml:
+    base-url: ${ML_SERVICE_URL:http://localhost:8001}
+    connect-timeout: ${ML_SERVICE_CONNECT_TIMEOUT:2s}
+    read-timeout: ${ML_SERVICE_READ_TIMEOUT:10s}
+
   security:
     jwt:
       secret-base64: ${JWT_SECRET_BASE64}
