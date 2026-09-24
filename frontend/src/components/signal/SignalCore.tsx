@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Pause, Play } from 'lucide-react'
-import { useReducedMotionSetting } from '../../hooks/motionPreference'
-import { useMedia } from '../../hooks/useMedia'
+import { useReducedMotionSetting } from '@/shared/hooks/motionPreference'
+import { useMedia } from '@/shared/hooks/useMedia'
 const Scene = lazy(() => import('./SignalScene'))
 function StaticCore({ processing }: { processing: boolean }) {
  return <svg className={`signal-static ${processing ? 'is-processing' : ''}`} viewBox="0 0 700 320" fill="none" aria-hidden="true"><g className="static-rails">{Array.from({ length: 15 }, (_, i) => { const y = 38 + i * 17; return <path key={i} d={`M 30 ${y} C 110 ${y - 30}, 180 ${y + 36}, 260 ${y} S 320 160, 352 160`} stroke="currentColor" opacity={.2 + i % 3 * .15} /> })}</g><g className="static-core">{[0, 1, 2, 3, 4].map(i => <ellipse key={i} cx={328 + i * 12} cy="160" rx="24" ry={62 - Math.abs(i - 2) * 8} stroke="var(--color-signal)" opacity={.25 + i * .13} />)}</g><path className="static-output" d="M352 160 C400 160 411 122 442 139 S477 188 510 148 S552 107 580 130 S620 170 668 109" stroke="var(--color-chart-forecast)" strokeWidth="2" strokeDasharray="6 4" />{[70, 110, 150, 190, 230].map((x, i) => <circle key={x} cx={x} cy={80 + i * 31} r="3" fill="currentColor" opacity=".5" />)}<path d="M40 277H668" stroke="currentColor" opacity=".12" /><path d="M352 70V264" stroke="currentColor" opacity=".2" strokeDasharray="2 7" /></svg>

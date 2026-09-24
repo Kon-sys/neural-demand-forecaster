@@ -1,4 +1,4 @@
-export interface ApiErrorPayload {
+﻿export interface ApiErrorPayload {
     timestamp?: string
     status?: number
     error?: string

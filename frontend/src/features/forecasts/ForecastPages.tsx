@@ -10,7 +10,7 @@ import { EmptyState, Signal, StateBoundary } from '../../components/feedback/Sta
 import { SignalCore } from '../../components/signal/SignalCore'
 import { ForecastChart } from '../../components/charts/ForecastChart'
 import { ForecastList } from './ForecastList'
-import { date, days, number } from '../../lib/format'
+import { date, days, number } from '@/shared/lib/format'
 export function ForecastCreate() {
  const { products, forecastOutcome, addForecast, general } = useStore(); const navigate = useNavigate(); const [productId, setProductId] = useState(''); const [horizon, setHorizon] = useState('14'); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [fieldError, setFieldError] = useState(''); const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])

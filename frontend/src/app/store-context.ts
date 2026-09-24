@@ -1,26 +1,61 @@
-import { createContext, useContext } from 'react'
-import type { Product } from '../mocks/products'
-import type { Forecast } from '../mocks/forecasts'
+﻿import {
+ createContext,
+ useContext,
+} from 'react'
 
-export type Role = 'USER' | 'ADMIN'
-export type AccountStatus = 'ACTIVE' | 'BLOCKED'
-export type GeneralState = 'default' | 'loading' | 'empty' | 'error'
-export type ForecastOutcome = 'success' | 'insufficient' | 'unavailable'
-export type CsvOutcome = 'success' | 'partial' | 'error' | 'structure'
+import type {
+ Product,
+} from '../mocks/products'
 
-export interface User {
- id: string
- name: string
- email: string
- avatarUrl: string | null
- role: Role
- status: AccountStatus
- departmentId: string | null
- positionId: string | null
- createdAt?: string
+import type {
+ Forecast,
+} from '../mocks/forecasts'
+
+import type {
+ User,
+ UserRole,
+ UserStatus,
+} from '@/entities/user/model/types'
+
+export type Role =
+    UserRole
+
+export type AccountStatus =
+    UserStatus
+
+export type GeneralState =
+    | 'default'
+    | 'loading'
+    | 'empty'
+    | 'error'
+
+export type ForecastOutcome =
+    | 'success'
+    | 'insufficient'
+    | 'unavailable'
+
+export type CsvOutcome =
+    | 'success'
+    | 'partial'
+    | 'error'
+    | 'structure'
+
+export type ToastType =
+    | 'success'
+    | 'error'
+    | 'info'
+
+export interface ToastMessage {
+ message: string
+ type: ToastType
 }
 
-export interface ManagedUser extends User {
+export type {
+ User,
+}
+
+export interface ManagedUser
+    extends User {
  lastActive: string
  createdAt: string
 }
@@ -38,44 +73,125 @@ export interface Position {
  isActive: boolean
 }
 
-export type ProfileUpdate = Pick<User, 'name' | 'email'> & { avatarUrl?: string | null }
-export type AdminUserUpdate = Pick<User, 'departmentId' | 'positionId' | 'role' | 'status'>
+export type AdminUserUpdate =
+    Pick<
+        User,
+        | 'departmentId'
+        | 'positionId'
+        | 'role'
+        | 'status'
+    >
 
 interface Store {
  user: User | null
- login: (email: string, name?: string) => string | null
+
  logout: () => void
- setRole: (role: Role) => void
- updateProfile: (profile: ProfileUpdate) => void
+
  users: ManagedUser[]
- updateManagedUser: (id: string, update: AdminUserUpdate) => string | null
- toggleUserStatus: (id: string) => string | null
+
+ updateManagedUser: (
+     id: string,
+     update: AdminUserUpdate,
+ ) => string | null
+
+ toggleUserStatus: (
+     id: string,
+ ) => string | null
+
  departments: Department[]
- addDepartment: (name: string) => void
- updateDepartment: (id: string, name: string) => void
- setDepartmentActive: (id: string, isActive: boolean) => void
+
+ addDepartment: (
+     name: string,
+ ) => void
+
+ updateDepartment: (
+     id: string,
+     name: string,
+ ) => void
+
+ setDepartmentActive: (
+     id: string,
+     isActive: boolean,
+ ) => void
+
  positions: Position[]
- addPosition: (name: string, departmentId: string) => string | null
- updatePosition: (id: string, name: string, departmentId: string) => string | null
- setPositionActive: (id: string, isActive: boolean) => void
+
+ addPosition: (
+     name: string,
+     departmentId: string,
+ ) => string | null
+
+ updatePosition: (
+     id: string,
+     name: string,
+     departmentId: string,
+ ) => string | null
+
+ setPositionActive: (
+     id: string,
+     isActive: boolean,
+ ) => void
+
  products: Product[]
- saveProduct: (p: Product) => void
- deleteProduct: (id: string) => void
+
+ saveProduct: (
+     product: Product,
+ ) => void
+
+ deleteProduct: (
+     id: string,
+ ) => void
+
  forecasts: Forecast[]
- addForecast: (forecast: Forecast) => void
+
+ addForecast: (
+     forecast: Forecast,
+ ) => void
+
  general: GeneralState
- setGeneral: (s: GeneralState) => void
- forecastOutcome: ForecastOutcome
- setForecastOutcome: (s: ForecastOutcome) => void
- csvOutcome: CsvOutcome
- setCsvOutcome: (s: CsvOutcome) => void
- toast: string
- notify: (message: string) => void
+
+ setGeneral: (
+     state: GeneralState,
+ ) => void
+
+ forecastOutcome:
+     ForecastOutcome
+
+ setForecastOutcome: (
+     state: ForecastOutcome,
+ ) => void
+
+ csvOutcome:
+     CsvOutcome
+
+ setCsvOutcome: (
+     state: CsvOutcome,
+ ) => void
+
+ toast: ToastMessage | null
+
+ notify: (
+     message: string,
+     type?: ToastType,
+ ) => void
 }
 
-export const Context = createContext<Store | null>(null)
+export const Context =
+    createContext<
+        Store | null
+    >(null)
+
 export function useStore() {
- const store = useContext(Context)
- if (!store) throw new Error('StoreProvider is required')
+ const store =
+     useContext(
+         Context,
+     )
+
+ if (!store) {
+  throw new Error(
+      'StoreProvider is required',
+  )
+ }
+
  return store
 }

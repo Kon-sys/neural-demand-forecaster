@@ -6,7 +6,7 @@ import { PageHeader, LinkButton, Field } from '../../components/ui/primitives'
 import { Button } from '../../components/ui/button'
 import { Overlay } from '../../components/ui/overlay'
 import { EmptyState, StateBoundary } from '../../components/feedback/States'
-import { date, number } from '../../lib/format'
+import { date, number } from '@/shared/lib/format'
 export function SalesPage() {
  const { products, user } = useStore(); const [product, setProduct] = useState(''); const [from, setFrom] = useState(''); const [to, setTo] = useState(''); const [sheet, setSheet] = useState(false); const [page, setPage] = useState(0)
  const invalid = !!from && !!to && from > to

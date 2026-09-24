@@ -1,4 +1,4 @@
-import { useReducedMotionSetting } from '../../hooks/motionPreference'
+import { useReducedMotionSetting } from '@/shared/hooks/motionPreference'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
 import { FileSpreadsheet, Upload, X, CheckCircle2, AlertTriangle, Info, ArrowRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -6,7 +6,7 @@ import { useStore } from '../../app/store-context'
 import { PageHeader, LinkButton, Badge, SectionTitle } from '../../components/ui/primitives'
 import { Button } from '../../components/ui/button'
 import { Signal } from '../../components/feedback/States'
-import { number } from '../../lib/format'
+import { number } from '@/shared/lib/format'
 type ImportState = 'default' | 'selected' | 'processing' | 'success' | 'partial' | 'format' | 'large' | 'structure' | 'error'
 const importErrors = [ { row: 43, field: 'Дата', value: '31.02.2026', reason: 'Дата не существует' }, { row: 127, field: 'Количество', value: '−5', reason: 'Количество не может быть отрицательным' }, { row: 204, field: 'Артикул', value: 'NB-999', reason: 'Товар не найден в каталоге' }, { row: 318, field: 'Количество', value: '—', reason: 'Обязательное поле не заполнено' }, { row: 449, field: 'Дата', value: 'август', reason: 'Ожидается дата в формате ГГГГ-ММ-ДД' }, { row: 512, field: 'Артикул', value: 'MN-999', reason: 'Товар не найден в каталоге' }, { row: 673, field: 'Количество', value: 'много', reason: 'Ожидается целое число' }, { row: 711, field: 'Дата', value: '—', reason: 'Обязательное поле не заполнено' }, { row: 856, field: 'Количество', value: '3,5', reason: 'Ожидается целое число' }, { row: 924, field: 'Артикул', value: '—', reason: 'Обязательное поле не заполнено' } ]
 export function ImportPage() {
