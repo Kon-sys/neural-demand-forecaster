@@ -20,7 +20,9 @@ from .validate import (
 )
 
 
-def load_raw_csv(path: str | Path) -> pd.DataFrame:
+def load_raw_csv(
+    path: str | Path,
+) -> pd.DataFrame:
     """
     Load a raw sales CSV file.
 
@@ -30,13 +32,19 @@ def load_raw_csv(path: str | Path) -> pd.DataFrame:
         quantity
     """
 
-    csv_path = Path(path)
+    csv_path = Path(
+        path
+    )
 
     if not csv_path.exists():
-        raise FileNotFoundError(f"Raw dataset does not exist: {csv_path}")
+        raise FileNotFoundError(
+            f"Raw dataset does not exist: {csv_path}"
+        )
 
     if not csv_path.is_file():
-        raise ValueError(f"Raw dataset path is not a file: {csv_path}")
+        raise ValueError(
+            f"Raw dataset path is not a file: {csv_path}"
+        )
 
     dataframe = pd.read_csv(
         csv_path,
@@ -57,44 +65,67 @@ def normalize_raw_dataframe(
     Operations:
         - trim product SKU values;
         - convert dates to normalized calendar dates;
-        - convert quantities to int64;
+        - convert quantities to float64;
         - sort observations by product and date.
     """
 
-    validate_raw_dataframe(dataframe)
+    validate_raw_dataframe(
+        dataframe
+    )
 
     normalized = dataframe.copy()
 
-    normalized[PRODUCT_COLUMN] = (
-        normalized[PRODUCT_COLUMN]
+    normalized[
+        PRODUCT_COLUMN
+    ] = (
+        normalized[
+            PRODUCT_COLUMN
+        ]
         .astype("string")
         .str.strip()
     )
 
-    normalized[DATE_COLUMN] = (
+    normalized[
+        DATE_COLUMN
+    ] = (
         pd.to_datetime(
-            normalized[DATE_COLUMN],
+            normalized[
+                DATE_COLUMN
+            ],
             errors="raise",
         )
         .dt.normalize()
     )
 
-    normalized[TARGET_COLUMN] = (
+    normalized[
+        TARGET_COLUMN
+    ] = (
         pd.to_numeric(
-            normalized[TARGET_COLUMN],
+            normalized[
+                TARGET_COLUMN
+            ],
             errors="raise",
         )
-        .astype("int64")
+        .astype(
+            "float64"
+        )
     )
 
     normalized = normalized.sort_values(
-        by=[PRODUCT_COLUMN, DATE_COLUMN],
+        by=[
+            PRODUCT_COLUMN,
+            DATE_COLUMN,
+        ],
         kind="stable",
-    ).reset_index(drop=True)
+    ).reset_index(
+        drop=True
+    )
 
     # Validate again after normalization because two different raw values
     # could collapse to the same logical product/date key.
-    validate_raw_dataframe(normalized)
+    validate_raw_dataframe(
+        normalized
+    )
 
     return normalized
 
@@ -109,28 +140,40 @@ def prepare_daily_dataset(
     observed date through its last observed date.
 
     Missing dates inside that interval are restored with:
-        quantity = 0
+        quantity = 0.0
         is_imputed = True
 
     Original observations receive:
         is_imputed = False
     """
 
-    normalized = normalize_raw_dataframe(dataframe)
+    normalized = normalize_raw_dataframe(
+        dataframe
+    )
 
-    prepared_frames: list[pd.DataFrame] = []
+    prepared_frames: list[
+        pd.DataFrame
+    ] = []
 
     for product_sku, product_data in normalized.groupby(
         PRODUCT_COLUMN,
         sort=True,
     ):
-        product_data = product_data.sort_values(
-            DATE_COLUMN,
-            kind="stable",
+        product_data = (
+            product_data
+            .sort_values(
+                DATE_COLUMN,
+                kind="stable",
+            )
         )
 
-        start_date = product_data[DATE_COLUMN].min()
-        end_date = product_data[DATE_COLUMN].max()
+        start_date = product_data[
+            DATE_COLUMN
+        ].min()
+
+        end_date = product_data[
+            DATE_COLUMN
+        ].max()
 
         full_calendar = pd.date_range(
             start=start_date,
@@ -140,41 +183,77 @@ def prepare_daily_dataset(
 
         observed_quantities = (
             product_data
-            .set_index(DATE_COLUMN)[TARGET_COLUMN]
-            .reindex(full_calendar)
+            .set_index(
+                DATE_COLUMN
+            )[
+                TARGET_COLUMN
+            ]
+            .reindex(
+                full_calendar
+            )
         )
 
-        imputed_mask = observed_quantities.isna()
+        imputed_mask = (
+            observed_quantities
+            .isna()
+        )
 
         daily_product = pd.DataFrame(
             {
-                PRODUCT_COLUMN: product_sku,
-                DATE_COLUMN: full_calendar,
+                PRODUCT_COLUMN: (
+                    product_sku
+                ),
+                DATE_COLUMN: (
+                    full_calendar
+                ),
                 TARGET_COLUMN: (
                     observed_quantities
-                    .fillna(0)
-                    .astype("int64")
+                    .fillna(
+                        0.0
+                    )
+                    .astype(
+                        "float64"
+                    )
                     .to_numpy()
                 ),
-                IMPUTED_COLUMN: imputed_mask.to_numpy(dtype=bool),
+                IMPUTED_COLUMN: (
+                    imputed_mask
+                    .to_numpy(
+                        dtype=bool
+                    )
+                ),
             }
         )
 
-        prepared_frames.append(daily_product)
+        prepared_frames.append(
+            daily_product
+        )
 
     processed = pd.concat(
         prepared_frames,
         ignore_index=True,
     )
 
-    processed = processed.loc[:, list(PROCESSED_COLUMNS)]
+    processed = processed.loc[
+        :,
+        list(
+            PROCESSED_COLUMNS
+        ),
+    ]
 
     processed = processed.sort_values(
-        by=[PRODUCT_COLUMN, DATE_COLUMN],
+        by=[
+            PRODUCT_COLUMN,
+            DATE_COLUMN,
+        ],
         kind="stable",
-    ).reset_index(drop=True)
+    ).reset_index(
+        drop=True
+    )
 
-    validate_processed_dataframe(processed)
+    validate_processed_dataframe(
+        processed
+    )
 
     return processed
 
@@ -187,10 +266,20 @@ def save_processed_csv(
     Validate and save a processed dataset as CSV.
     """
 
-    summary = validate_processed_dataframe(dataframe)
+    summary = (
+        validate_processed_dataframe(
+            dataframe
+        )
+    )
 
-    output_path = Path(path)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path = Path(
+        path
+    )
+
+    output_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     dataframe.to_csv(
         output_path,
@@ -209,8 +298,15 @@ def prepare_csv(
     Run the complete raw CSV -> processed CSV pipeline.
     """
 
-    raw_dataframe = load_raw_csv(input_path)
-    processed_dataframe = prepare_daily_dataset(raw_dataframe)
+    raw_dataframe = load_raw_csv(
+        input_path
+    )
+
+    processed_dataframe = (
+        prepare_daily_dataset(
+            raw_dataframe
+        )
+    )
 
     return save_processed_csv(
         processed_dataframe,
@@ -229,20 +325,27 @@ def _build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "input",
         type=Path,
-        help="Path to the raw CSV dataset.",
+        help=(
+            "Path to the raw CSV dataset."
+        ),
     )
 
     parser.add_argument(
         "output",
         type=Path,
-        help="Path for the processed CSV dataset.",
+        help=(
+            "Path for the processed CSV dataset."
+        ),
     )
 
     return parser
 
 
 def main() -> None:
-    parser = _build_argument_parser()
+    parser = (
+        _build_argument_parser()
+    )
+
     args = parser.parse_args()
 
     summary = prepare_csv(
@@ -250,22 +353,46 @@ def main() -> None:
         output_path=args.output,
     )
 
-    processed = pd.read_csv(args.output)
+    processed = pd.read_csv(
+        args.output
+    )
 
     imputed_rows = int(
-        processed[IMPUTED_COLUMN]
+        processed[
+            IMPUTED_COLUMN
+        ]
         .astype(str)
         .str.lower()
         .eq("true")
         .sum()
     )
 
-    print("Dataset preparation completed")
-    print(f"Rows: {summary.rows}")
-    print(f"Products: {summary.products}")
-    print(f"Date range: {summary.min_date.date()} -> {summary.max_date.date()}")
-    print(f"Imputed observations: {imputed_rows}")
-    print(f"Output: {args.output}")
+    print(
+        "Dataset preparation completed"
+    )
+
+    print(
+        f"Rows: {summary.rows}"
+    )
+
+    print(
+        f"Products: {summary.products}"
+    )
+
+    print(
+        "Date range: "
+        f"{summary.min_date.date()} "
+        "-> "
+        f"{summary.max_date.date()}"
+    )
+
+    print(
+        f"Imputed observations: {imputed_rows}"
+    )
+
+    print(
+        f"Output: {args.output}"
+    )
 
 
 if __name__ == "__main__":
