@@ -5,15 +5,19 @@ import {
     Route,
     Routes,
 } from 'react-router-dom'
+
 import {
     useAuth,
 } from '@/features/auth/model/useAuth'
+
 import {
     AppLayout,
 } from '@/components/layout/AppLayout'
+
 import {
     Skeleton,
 } from '@/components/feedback/States'
+
 import {
     Toast,
 } from '@/components/feedback/Toast'
@@ -21,13 +25,31 @@ import {
 import {
     AuthPage,
 } from '@/pages/auth/ui/AuthPage'
+
 import {
     ProfilePage,
 } from '@/pages/profile/ui/ProfilePage'
 
 import {
+    ProductsPage,
+} from '@/pages/products/ui/ProductsPage'
+
+import {
+    ProductForm,
+} from '@/pages/products/ui/ProductForm'
+
+import {
+    SalesPage,
+} from '@/pages/sales/ui/SalesPage'
+
+import {
+    ImportPage,
+} from '@/pages/sales-import/ui/ImportPage'
+
+import {
     Dashboard,
 } from '@/features/forecasts/Dashboard'
+
 import {
     ForecastCreate,
     ForecastHistory,
@@ -36,20 +58,9 @@ import {
 } from '@/features/forecasts/ForecastPages'
 
 import {
-    ProductsPage,
-} from '@/features/products/ProductsPage'
-import {
-    ProductForm,
-} from '@/features/products/ProductForm'
-import {
-    SalesPage,
-} from '@/features/sales/SalesPage'
-import {
-    ImportPage,
-} from '@/features/import/ImportPage'
-import {
     OrganizationPage,
 } from '@/features/admin/OrganizationPage'
+
 import {
     UsersPage,
 } from '@/features/admin/UsersPage'
@@ -84,8 +95,7 @@ function RequireAdmin() {
         return <Skeleton />
     }
 
-    return user?.role ===
-    'ADMIN'
+    return user?.role === 'ADMIN'
         ? <Outlet />
         : (
             <Navigate
