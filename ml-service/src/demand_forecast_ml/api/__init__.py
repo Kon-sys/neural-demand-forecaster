@@ -1,0 +1,1 @@
+"""FastAPI application for demand forecast inference."""
