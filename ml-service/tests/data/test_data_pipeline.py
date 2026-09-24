@@ -42,16 +42,35 @@ def test_prepare_daily_dataset_restores_missing_dates() -> None:
         }
     )
 
-    processed = prepare_daily_dataset(raw)
+    processed = prepare_daily_dataset(
+        raw
+    )
 
-    assert len(processed) == 4
+    assert len(
+        processed
+    ) == 4
 
     missing_day = processed.loc[
-        processed[DATE_COLUMN] == pd.Timestamp("2026-01-02")
+        processed[
+            DATE_COLUMN
+        ]
+        == pd.Timestamp(
+            "2026-01-02"
+        )
     ].iloc[0]
 
-    assert missing_day[TARGET_COLUMN] == 0
-    assert bool(missing_day[IMPUTED_COLUMN]) is True
+    assert (
+        missing_day[
+            TARGET_COLUMN
+        ]
+        == 0.0
+    )
+
+    assert bool(
+        missing_day[
+            IMPUTED_COLUMN
+        ]
+    ) is True
 
 
 def test_original_observations_are_not_marked_as_imputed() -> None:
@@ -72,12 +91,19 @@ def test_original_observations_are_not_marked_as_imputed() -> None:
         }
     )
 
-    processed = prepare_daily_dataset(raw)
+    processed = prepare_daily_dataset(
+        raw
+    )
 
-    assert processed[IMPUTED_COLUMN].tolist() == [
-        False,
-        False,
-    ]
+    assert (
+        processed[
+            IMPUTED_COLUMN
+        ].tolist()
+        == [
+            False,
+            False,
+        ]
+    )
 
 
 def test_calendar_is_created_independently_for_each_product() -> None:
@@ -104,23 +130,68 @@ def test_calendar_is_created_independently_for_each_product() -> None:
         }
     )
 
-    processed = prepare_daily_dataset(raw)
+    processed = prepare_daily_dataset(
+        raw
+    )
 
     first_product = processed.loc[
-        processed[PRODUCT_COLUMN] == "SKU-001"
+        processed[
+            PRODUCT_COLUMN
+        ]
+        == "SKU-001"
     ]
 
     second_product = processed.loc[
-        processed[PRODUCT_COLUMN] == "SKU-002"
+        processed[
+            PRODUCT_COLUMN
+        ]
+        == "SKU-002"
     ]
 
-    assert first_product[DATE_COLUMN].min() == pd.Timestamp("2026-01-01")
-    assert first_product[DATE_COLUMN].max() == pd.Timestamp("2026-01-03")
+    assert (
+        first_product[
+            DATE_COLUMN
+        ].min()
+        == pd.Timestamp(
+            "2026-01-01"
+        )
+    )
 
-    assert second_product[DATE_COLUMN].min() == pd.Timestamp("2026-01-05")
-    assert second_product[DATE_COLUMN].max() == pd.Timestamp("2026-01-07")
+    assert (
+        first_product[
+            DATE_COLUMN
+        ].max()
+        == pd.Timestamp(
+            "2026-01-03"
+        )
+    )
 
-    assert pd.Timestamp("2026-01-04") not in second_product[DATE_COLUMN].values
+    assert (
+        second_product[
+            DATE_COLUMN
+        ].min()
+        == pd.Timestamp(
+            "2026-01-05"
+        )
+    )
+
+    assert (
+        second_product[
+            DATE_COLUMN
+        ].max()
+        == pd.Timestamp(
+            "2026-01-07"
+        )
+    )
+
+    assert (
+        pd.Timestamp(
+            "2026-01-04"
+        )
+        not in second_product[
+            DATE_COLUMN
+        ].values
+    )
 
 
 def test_duplicate_product_date_is_rejected() -> None:
@@ -143,9 +214,13 @@ def test_duplicate_product_date_is_rejected() -> None:
 
     with pytest.raises(
         DatasetValidationError,
-        match="Duplicate product/date observations",
+        match=(
+            "Duplicate product/date observations"
+        ),
     ):
-        validate_raw_dataframe(raw)
+        validate_raw_dataframe(
+            raw
+        )
 
 
 def test_negative_quantity_is_rejected() -> None:
@@ -165,12 +240,16 @@ def test_negative_quantity_is_rejected() -> None:
 
     with pytest.raises(
         DatasetValidationError,
-        match="greater than or equal to zero",
+        match=(
+            "greater than or equal to zero"
+        ),
     ):
-        validate_raw_dataframe(raw)
+        validate_raw_dataframe(
+            raw
+        )
 
 
-def test_fractional_quantity_is_rejected() -> None:
+def test_fractional_quantity_is_preserved() -> None:
     raw = pd.DataFrame(
         {
             PRODUCT_COLUMN: [
@@ -185,11 +264,57 @@ def test_fractional_quantity_is_rejected() -> None:
         }
     )
 
+    validate_raw_dataframe(
+        raw
+    )
+
+    processed = prepare_daily_dataset(
+        raw
+    )
+
+    assert (
+        processed[
+            TARGET_COLUMN
+        ].dtype
+        == "float64"
+    )
+
+    assert (
+        processed.iloc[0][
+            TARGET_COLUMN
+        ]
+        == pytest.approx(
+            5.5
+        )
+    )
+
+
+def test_infinite_quantity_is_rejected() -> None:
+    raw = pd.DataFrame(
+        {
+            PRODUCT_COLUMN: [
+                "SKU-001",
+            ],
+            DATE_COLUMN: [
+                "2026-01-01",
+            ],
+            TARGET_COLUMN: [
+                float(
+                    "inf"
+                ),
+            ],
+        }
+    )
+
     with pytest.raises(
         DatasetValidationError,
-        match="integer values",
+        match=(
+            "finite numeric values"
+        ),
     ):
-        validate_raw_dataframe(raw)
+        validate_raw_dataframe(
+            raw
+        )
 
 
 def test_processed_dataset_must_be_continuous() -> None:
@@ -206,8 +331,8 @@ def test_processed_dataset_must_be_continuous() -> None:
                 ]
             ),
             TARGET_COLUMN: [
-                5,
-                7,
+                5.0,
+                7.0,
             ],
             IMPUTED_COLUMN: [
                 False,
@@ -218,9 +343,13 @@ def test_processed_dataset_must_be_continuous() -> None:
 
     with pytest.raises(
         DatasetValidationError,
-        match="continuous daily calendar",
+        match=(
+            "continuous daily calendar"
+        ),
     ):
-        validate_processed_dataframe(processed)
+        validate_processed_dataframe(
+            processed
+        )
 
 
 def test_imputed_row_must_have_zero_quantity() -> None:
@@ -235,7 +364,7 @@ def test_imputed_row_must_have_zero_quantity() -> None:
                 ]
             ),
             TARGET_COLUMN: [
-                10,
+                10.0,
             ],
             IMPUTED_COLUMN: [
                 True,
@@ -247,47 +376,77 @@ def test_imputed_row_must_have_zero_quantity() -> None:
         DatasetValidationError,
         match="quantity = 0",
     ):
-        validate_processed_dataframe(processed)
+        validate_processed_dataframe(
+            processed
+        )
 
 
 def test_csv_pipeline_can_be_saved_and_loaded(
     tmp_path,
 ) -> None:
-    raw_path = tmp_path / "raw.csv"
-    processed_path = tmp_path / "processed.csv"
+    raw_path = (
+        tmp_path
+        / "raw.csv"
+    )
+
+    processed_path = (
+        tmp_path
+        / "processed.csv"
+    )
 
     raw_path.write_text(
         (
             "product_sku,date,quantity\n"
-            "SKU-001,2026-01-01,10\n"
-            "SKU-001,2026-01-03,20\n"
+            "SKU-001,2026-01-01,10.5\n"
+            "SKU-001,2026-01-03,20.25\n"
         ),
         encoding="utf-8",
     )
 
-    raw = load_raw_csv(raw_path)
-    processed = prepare_daily_dataset(raw)
+    raw = load_raw_csv(
+        raw_path
+    )
+
+    processed = prepare_daily_dataset(
+        raw
+    )
 
     summary = save_processed_csv(
         processed,
         processed_path,
     )
 
-    assert processed_path.exists()
-    assert summary.rows == 3
-    assert summary.products == 1
+    assert (
+        processed_path.exists()
+    )
 
-    saved = pd.read_csv(processed_path)
+    assert (
+        summary.rows
+        == 3
+    )
 
-    assert list(saved.columns) == [
+    assert (
+        summary.products
+        == 1
+    )
+
+    saved = pd.read_csv(
+        processed_path
+    )
+
+    assert list(
+        saved.columns
+    ) == [
         PRODUCT_COLUMN,
         DATE_COLUMN,
         TARGET_COLUMN,
         IMPUTED_COLUMN,
     ]
 
-    assert saved[TARGET_COLUMN].tolist() == [
-        10,
-        0,
-        20,
+    assert saved[
+        TARGET_COLUMN
+    ].tolist() == [
+        10.5,
+        0.0,
+        20.25,
     ]

@@ -50,7 +50,10 @@ RAW_COLUMN_SPECS = {
         name=PRODUCT_COLUMN,
         logical_type="string",
         nullable=False,
-        description="Stable product identifier used to separate time series.",
+        description=(
+            "Stable series identifier used to separate product demand "
+            "time series."
+        ),
     ),
     DATE_COLUMN: ColumnSpec(
         name=DATE_COLUMN,
@@ -60,9 +63,12 @@ RAW_COLUMN_SPECS = {
     ),
     TARGET_COLUMN: ColumnSpec(
         name=TARGET_COLUMN,
-        logical_type="integer",
+        logical_type="number",
         nullable=False,
-        description="Number of product units sold on the specified date.",
+        description=(
+            "Non-negative numeric demand or sales-volume value "
+            "observed on the specified date."
+        ),
     ),
 }
 
@@ -95,7 +101,7 @@ TARGET_COLUMN_NAME = TARGET_COLUMN
 
 TIME_FREQUENCY = "D"
 
-MIN_QUANTITY = 0
+MIN_QUANTITY = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +112,7 @@ DATASET_RULES = (
     "All required columns must exist.",
     "product_sku must not be null or blank.",
     "date must contain valid calendar dates.",
-    "quantity must contain integer values.",
+    "quantity must contain finite numeric values.",
     "quantity must be greater than or equal to zero.",
     "The combination product_sku + date must be unique.",
     "Processed data must be ordered chronologically within each product.",
