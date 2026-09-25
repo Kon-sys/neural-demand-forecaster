@@ -8,6 +8,9 @@ from typing import Iterable
 import torch
 from torch import nn
 
+from demand_forecast_ml.data.preprocessing import (
+    MinMaxScaler1D,
+)
 from demand_forecast_ml.lstm.checkpoint import (
     load_checkpoint,
 )
@@ -19,19 +22,33 @@ from demand_forecast_ml.lstm.training import (
 )
 
 
-class PredictionRuntimeError(RuntimeError):
+class PredictionRuntimeError(
+    RuntimeError
+):
     """Base error raised by prediction runtime."""
 
 
-class UnknownSeriesError(PredictionRuntimeError):
-    """Raised when no TRAIN scaler exists for a requested series."""
+class UnknownSeriesError(
+    PredictionRuntimeError
+):
+    """
+    Legacy error type kept for API compatibility.
+
+    New product series are no longer rejected solely because
+    the training scaler registry does not contain their SKU.
+    """
 
 
-class InvalidHistoryError(PredictionRuntimeError):
+class InvalidHistoryError(
+    PredictionRuntimeError
+):
     """Raised when supplied demand history cannot be used for inference."""
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(
+    frozen=True,
+    slots=True,
+)
 class PredictionResult:
     product_sku: str
     prediction: float
@@ -39,7 +56,10 @@ class PredictionResult:
     history_points_used: int
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(
+    frozen=True,
+    slots=True,
+)
 class RuntimeHealth:
     model_loaded: bool
     scalers_loaded: bool
@@ -49,7 +69,7 @@ class RuntimeHealth:
 
 
 def resolve_runtime_device(
-    requested_device: str,
+        requested_device: str,
 ) -> torch.device:
     normalized = (
         requested_device
@@ -88,20 +108,24 @@ class PredictionRuntime:
     The runtime owns:
 
     - the frozen LSTM checkpoint;
-    - TRAIN-only per-series scalers;
+    - TRAIN-only per-series scalers for known product series;
     - the inference device;
     - the fixed model window size.
 
-    It never trains or modifies the model.
+    For product series that were not present during model training,
+    an inference-only Min-Max scaler is fitted from the supplied
+    historical demand values.
+
+    The LSTM itself is never trained or modified during prediction.
     """
 
     def __init__(
-        self,
-        *,
-        model: nn.Module,
-        scalers: SeriesScalerRegistry,
-        device: torch.device,
-        window_size: int,
+            self,
+            *,
+            model: nn.Module,
+            scalers: SeriesScalerRegistry,
+            device: torch.device,
+            window_size: int,
     ) -> None:
         if window_size <= 0:
             raise ValueError(
@@ -121,11 +145,11 @@ class PredictionRuntime:
 
     @classmethod
     def load(
-        cls,
-        *,
-        checkpoint_path: str | Path,
-        scalers_path: str | Path,
-        requested_device: str = "auto",
+            cls,
+            *,
+            checkpoint_path: str | Path,
+            scalers_path: str | Path,
+            requested_device: str = "auto",
     ) -> "PredictionRuntime":
         device = resolve_runtime_device(
             requested_device
@@ -136,8 +160,10 @@ class PredictionRuntime:
             device=device,
         )
 
-        scalers = SeriesScalerRegistry.load(
-            scalers_path
+        scalers = (
+            SeriesScalerRegistry.load(
+                scalers_path
+            )
         )
 
         return cls(
@@ -152,11 +178,13 @@ class PredictionRuntime:
         )
 
     @property
-    def window_size(self) -> int:
+    def window_size(
+            self,
+    ) -> int:
         return self._window_size
 
     def health(
-        self,
+            self,
     ) -> RuntimeHealth:
         return RuntimeHealth(
             model_loaded=True,
@@ -173,8 +201,8 @@ class PredictionRuntime:
         )
 
     def _normalize_history(
-        self,
-        history: Iterable[float],
+            self,
+            history: Iterable[float],
     ) -> tuple[
         float,
         ...,
@@ -189,15 +217,15 @@ class PredictionRuntime:
                     value
                 )
             except (
-                TypeError,
-                ValueError,
+                    TypeError,
+                    ValueError,
             ) as exc:
                 raise InvalidHistoryError(
                     "Demand history must contain numeric values only."
                 ) from exc
 
             if not math.isfinite(
-                numeric
+                    numeric
             ):
                 raise InvalidHistoryError(
                     "Demand history must contain finite values only."
@@ -213,7 +241,7 @@ class PredictionRuntime:
             )
 
         if len(
-            values
+                values
         ) < self._window_size:
             raise InvalidHistoryError(
                 "Insufficient demand history. "
@@ -222,16 +250,51 @@ class PredictionRuntime:
             )
 
         return tuple(
-            values[
-                -self._window_size:
-            ]
+            values
         )
 
+    def _resolve_scaler(
+            self,
+            *,
+            product_sku: str,
+            history: tuple[
+                float,
+                ...,
+            ],
+    ) -> MinMaxScaler1D:
+        """
+        Resolve scaling parameters for inference.
+
+        Known product series use the TRAIN-only scaler stored together
+        with the model.
+
+        A product created after model training has no persisted scaler.
+        For such a series, scaling parameters are derived exclusively
+        from its already observed historical demand.
+
+        No future values or prediction targets participate in fitting.
+        """
+        try:
+            return (
+                self._scalers.get(
+                    product_sku
+                )
+            )
+        except KeyError:
+            return MinMaxScaler1D(
+                min_value=min(
+                    history
+                ),
+                max_value=max(
+                    history
+                ),
+            )
+
     def predict(
-        self,
-        *,
-        product_sku: str,
-        history: Iterable[float],
+            self,
+            *,
+            product_sku: str,
+            history: Iterable[float],
     ) -> PredictionResult:
         normalized_sku = (
             str(
@@ -245,20 +308,27 @@ class PredictionRuntime:
                 "product_sku must not be blank."
             )
 
-        try:
-            scaler = self._scalers.get(
-                normalized_sku
-            )
-        except KeyError as exc:
-            raise UnknownSeriesError(
-                "No scaler exists for product series "
-                f"'{normalized_sku}'."
-            ) from exc
-
-        input_history = (
+        full_history = (
             self._normalize_history(
                 history
             )
+        )
+
+        scaler = (
+            self._resolve_scaler(
+                product_sku=(
+                    normalized_sku
+                ),
+                history=(
+                    full_history
+                ),
+            )
+        )
+
+        input_history = (
+            full_history[
+                -self._window_size:
+            ]
         )
 
         scaled_history = [
@@ -298,7 +368,7 @@ class PredictionRuntime:
         )
 
         if not math.isfinite(
-            prediction
+                prediction
         ):
             raise PredictionRuntimeError(
                 "Model produced a non-finite prediction."
@@ -312,12 +382,16 @@ class PredictionRuntime:
         )
 
         return PredictionResult(
-            product_sku=normalized_sku,
-            prediction=prediction,
+            product_sku=(
+                normalized_sku
+            ),
+            prediction=(
+                prediction
+            ),
             window_size=(
                 self._window_size
             ),
-            history_points_used=(
-                self._window_size
+            history_points_used=len(
+                input_history
             ),
         )

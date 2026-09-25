@@ -1,13 +1,321 @@
-import { ArrowRight, CalendarDays, Database, Plus, Upload } from 'lucide-react'
-import { useStore } from '../../app/store-context'
-import { PageHeader, LinkButton, SectionTitle, Badge, OpenLink } from '../../components/ui/primitives'
-import { StateBoundary } from '../../components/feedback/States'
-import { DepthSurface } from '../../components/ui/DepthSurface'
-import { ForecastChart } from '../../components/charts/ForecastChart'
-import { ForecastList } from './ForecastList'
-import { availability } from '../../mocks/dashboard'
-import { date, days, number } from '@/shared/lib/format'
+import {
+ ArrowRight,
+ CalendarDays,
+ ChartNoAxesCombined,
+ Plus,
+ Upload,
+} from 'lucide-react'
+
+import {
+ useAuth,
+} from '@/features/auth/model/useAuth'
+
+import {
+ useForecastHistory,
+} from '@/features/forecasts/model/useForecastHistory'
+
+import {
+ ForecastList,
+} from '@/features/forecasts/ForecastList'
+
+import {
+ EmptyState,
+} from '@/components/feedback/States'
+
+import {
+ DepthSurface,
+} from '@/components/ui/DepthSurface'
+
+import {
+ LinkButton,
+ OpenLink,
+ PageHeader,
+ SectionTitle,
+} from '@/components/ui/primitives'
+
+import {
+ date,
+ days,
+ number,
+} from '@/shared/lib/format'
+
 export function Dashboard() {
- const { forecasts, products, user } = useStore(); const latest = forecasts[0]; const data = availability(products.map(p => p.id))
- return <><PageHeader eyebrow="ОБЗОР РАБОЧЕГО ПРОСТРАНСТВА" title="Главная" description="Ваши данные. Следующий шаг — точный прогноз." actions={<LinkButton to="/forecasts/new"><Plus size={17} />Создать прогноз</LinkButton>} /><StateBoundary emptyTitle="Начните с данных" emptyDescription={user?.role === 'ADMIN' ? 'Добавьте товары и импортируйте историю продаж.' : 'Пока нет данных для прогнозирования. Обратитесь к администратору.'} emptyAction={user?.role === 'ADMIN' ? <LinkButton to="/sales/import">Импорт CSV</LinkButton> : undefined}><div className="dashboard-composition"><DepthSurface className="latest-forecast"><div className="section-heading"><span className="eyebrow">ПОСЛЕДНИЙ ПРОГНОЗ</span><Badge /></div><div className="latest-title"><h2>{latest.product.name}</h2><span className="mono muted">{latest.product.sku}</span></div><div className="inline-meta"><span><CalendarDays size={14} />{date(latest.createdAt)}</span><span>Горизонт · {days(latest.horizon)}</span></div><ForecastChart forecast={latest} compact /><div className="latest-bottom"><span className="muted">История продаж и ожидаемый спрос</span><OpenLink to={`/forecasts/${latest.id}`} label="Открыть прогноз" /></div></DepthSurface><aside className="availability"><div className="section-heading"><span className="eyebrow">ДОСТУПНОСТЬ ДАННЫХ</span><Database size={18} /></div><div className="availability-count"><strong>{number(products.length)}</strong><span>товаров в каталоге</span></div><div className="availability-detail"><span>Записи о продажах</span><strong>{number(data.count)}<small> наблюдений</small></strong></div><div className="availability-detail"><span>Период истории</span><strong className="date-range">{data.from ? date(data.from) : '—'}<span>—</span>{data.to ? date(data.to) : '—'}</strong></div><div className="availability-note"><span className="status-dot" />История доступна для прогнозирования</div><LinkButton variant="ghost" to="/sales">Посмотреть продажи<ArrowRight size={16} /></LinkButton>{user?.role === 'ADMIN' && <LinkButton variant="secondary" to="/sales/import"><Upload size={16} />Импорт CSV</LinkButton>}</aside></div><section className="recent-section"><SectionTitle aside={<OpenLink to="/forecasts" label="Вся история" />}>Недавние прогнозы <span className="count-label">{forecasts.length}</span></SectionTitle><ForecastList forecasts={forecasts.slice(0, 4)} compact /></section></StateBoundary></>
+ const {
+  user,
+ } = useAuth()
+
+ const {
+  data,
+  forecasts,
+  loading,
+  error,
+ } = useForecastHistory({
+  page:
+      0,
+
+  size:
+      4,
+ })
+
+ const latest =
+     forecasts[0]
+
+ const totalForecasts =
+     data?.totalElements
+     ?? 0
+
+ return (
+     <>
+      <PageHeader
+          eyebrow="ОБЗОР РАБОЧЕГО ПРОСТРАНСТВА"
+          title="Главная"
+          description="Актуальные результаты прогнозирования на основе данных приложения."
+          actions={
+           <LinkButton to="/forecasts/new">
+            <Plus size={17} />
+            Создать прогноз
+           </LinkButton>
+          }
+      />
+
+      {loading && (
+          <div
+              className="plain-note"
+              aria-busy="true"
+          >
+           Загружаем данные Dashboard…
+          </div>
+      )}
+
+      {!loading && error && (
+          <div
+              className="inline-error"
+              role="alert"
+          >
+           {error}
+          </div>
+      )}
+
+      {!loading
+          && !error
+          && !latest
+          && (
+              <EmptyState
+                  title="Прогнозов пока нет"
+                  description="После построения первого прогноза здесь появится актуальная сводка."
+                  action={
+                   <LinkButton to="/forecasts/new">
+                    Создать прогноз
+                   </LinkButton>
+                  }
+              />
+          )}
+
+      {!loading
+          && !error
+          && latest
+          && (
+              <>
+               <div className="dashboard-composition">
+                <DepthSurface className="latest-forecast">
+                 <div className="section-heading">
+                                    <span className="eyebrow">
+                                        ПОСЛЕДНИЙ ПРОГНОЗ
+                                    </span>
+
+                  <ChartNoAxesCombined
+                      size={18}
+                  />
+                 </div>
+
+                 <div className="latest-title">
+                  <h2>
+                   {
+                    latest
+                        .productName
+                   }
+                  </h2>
+
+                  <span className="mono muted">
+                                        {
+                                         latest
+                                             .productSku
+                                        }
+                                    </span>
+                 </div>
+
+                 <div className="inline-meta">
+                                    <span>
+                                        <CalendarDays
+                                            size={14}
+                                        />
+
+                                     {
+                                      date(
+                                          latest
+                                              .createdAt,
+                                      )
+                                     }
+                                    </span>
+
+                  <span>
+                                        Горизонт · {
+                   days(
+                       latest
+                           .forecastHorizon,
+                   )
+                  }
+                                    </span>
+                 </div>
+
+                 <div className="availability-detail">
+                                    <span>
+                                        Модель
+                                    </span>
+
+                  <strong className="mono">
+                   {
+                    latest
+                        .modelVersion
+                   }
+                  </strong>
+                 </div>
+
+                 <div className="availability-detail">
+                                    <span>
+                                        Статус
+                                    </span>
+
+                  <strong>
+                   {
+                    latest.status
+                    === 'COMPLETED'
+                        ? 'Готов'
+                        : latest.status
+                   }
+                  </strong>
+                 </div>
+
+                 <div className="latest-bottom">
+                                    <span className="muted">
+                                        Сохранённый результат из базы данных
+                                    </span>
+
+                  <OpenLink
+                      to={
+                       `/forecasts/${latest.id}`
+                      }
+                      label="Открыть прогноз"
+                  />
+                 </div>
+                </DepthSurface>
+
+                <aside className="availability">
+                 <div className="section-heading">
+                                    <span className="eyebrow">
+                                        СВОДКА
+                                    </span>
+
+                  <ChartNoAxesCombined
+                      size={18}
+                  />
+                 </div>
+
+                 <div className="availability-count">
+                  <strong>
+                   {
+                    number(
+                        totalForecasts,
+                    )
+                   }
+                  </strong>
+
+                  <span>
+                                        прогнозов создано
+                                    </span>
+                 </div>
+
+                 <div className="availability-detail">
+                                    <span>
+                                        Последний горизонт
+                                    </span>
+
+                  <strong>
+                   {
+                    days(
+                        latest
+                            .forecastHorizon,
+                    )
+                   }
+                  </strong>
+                 </div>
+
+                 <div className="availability-detail">
+                                    <span>
+                                        Последнее обновление
+                                    </span>
+
+                  <strong>
+                   {
+                    date(
+                        latest
+                            .createdAt,
+                    )
+                   }
+                  </strong>
+                 </div>
+
+                 <div className="availability-note">
+                  <span className="status-dot" />
+                  Данные получены из Backend API
+                 </div>
+
+                 <LinkButton
+                     variant="ghost"
+                     to="/forecasts"
+                 >
+                  Вся история
+                  <ArrowRight size={16} />
+                 </LinkButton>
+
+                 {user?.role === 'ADMIN' && (
+                     <LinkButton
+                         variant="secondary"
+                         to="/sales/import"
+                     >
+                      <Upload size={16} />
+                      Импорт CSV
+                     </LinkButton>
+                 )}
+                </aside>
+               </div>
+
+               <section className="recent-section">
+                <SectionTitle
+                    aside={
+                     <OpenLink
+                         to="/forecasts"
+                         label="Вся история"
+                     />
+                    }
+                >
+                 Недавние прогнозы{' '}
+                 <span className="count-label">
+                                    {
+                                     totalForecasts
+                                    }
+                                </span>
+                </SectionTitle>
+
+                <ForecastList
+                    forecasts={
+                     forecasts
+                    }
+                    compact
+                />
+               </section>
+              </>
+          )}
+     </>
+ )
 }

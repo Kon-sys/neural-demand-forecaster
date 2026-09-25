@@ -47,15 +47,24 @@ import {
 } from '@/pages/sales-import/ui/ImportPage'
 
 import {
-    Dashboard,
-} from '@/features/forecasts/Dashboard'
+    ForecastCreatePage,
+} from '@/pages/forecasts/ui/ForecastCreatePage'
 
 import {
-    ForecastCreate,
-    ForecastHistory,
-    ForecastResult,
-    RouteError,
-} from '@/features/forecasts/ForecastPages'
+    ForecastHistoryPage,
+} from '@/pages/forecasts/ui/ForecastHistoryPage'
+
+import {
+    ForecastResultPage,
+} from '@/pages/forecasts/ui/ForecastResultPage'
+
+import {
+    RouteErrorPage,
+} from '@/pages/errors/ui/RouteErrorPage'
+
+import {
+    Dashboard,
+} from '@/features/forecasts/Dashboard'
 
 import {
     OrganizationPage,
@@ -95,7 +104,8 @@ function RequireAdmin() {
         return <Skeleton />
     }
 
-    return user?.role === 'ADMIN'
+    return user?.role ===
+    'ADMIN'
         ? <Outlet />
         : (
             <Navigate
@@ -179,21 +189,21 @@ export function AppRouter() {
                         <Route
                             path="/forecasts/new"
                             element={
-                                <ForecastCreate />
+                                <ForecastCreatePage />
                             }
                         />
 
                         <Route
                             path="/forecasts"
                             element={
-                                <ForecastHistory />
+                                <ForecastHistoryPage />
                             }
                         />
 
                         <Route
                             path="/forecasts/:id"
                             element={
-                                <ForecastResult />
+                                <ForecastResultPage />
                             }
                         />
 
@@ -243,7 +253,7 @@ export function AppRouter() {
                         <Route
                             path="/403"
                             element={
-                                <RouteError
+                                <RouteErrorPage
                                     forbidden
                                 />
                             }
@@ -252,7 +262,7 @@ export function AppRouter() {
                         <Route
                             path="*"
                             element={
-                                <RouteError />
+                                <RouteErrorPage />
                             }
                         />
                     </Route>
