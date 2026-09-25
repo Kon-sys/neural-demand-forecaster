@@ -13,7 +13,6 @@ from demand_forecast_ml.lstm.scaling import (
 from demand_forecast_ml.runtime.predictor import (
     InvalidHistoryError,
     PredictionRuntime,
-    UnknownSeriesError,
 )
 
 
@@ -21,8 +20,8 @@ class ConstantModel(
     nn.Module
 ):
     def __init__(
-        self,
-        value: float,
+            self,
+            value: float,
     ) -> None:
         super().__init__()
 
@@ -31,8 +30,8 @@ class ConstantModel(
         )
 
     def forward(
-        self,
-        inputs: torch.Tensor,
+            self,
+            inputs: torch.Tensor,
     ) -> torch.Tensor:
         return torch.full(
             (
@@ -80,20 +79,20 @@ def test_prediction_is_inverse_transformed() -> None:
     )
 
     assert (
-        result.prediction
-        == pytest.approx(
-            15.0
-        )
+            result.prediction
+            == pytest.approx(
+        15.0
+    )
     )
 
     assert (
-        result.window_size
-        == 3
+            result.window_size
+            == 3
     )
 
     assert (
-        result.history_points_used
-        == 3
+            result.history_points_used
+            == 3
     )
 
 
@@ -113,10 +112,15 @@ def test_runtime_accepts_longer_history() -> None:
     )
 
     assert (
-        result.prediction
-        == pytest.approx(
-            15.0
-        )
+            result.prediction
+            == pytest.approx(
+        15.0
+    )
+    )
+
+    assert (
+            result.history_points_used
+            == 3
     )
 
 
@@ -124,10 +128,10 @@ def test_runtime_rejects_insufficient_history() -> None:
     runtime = _runtime()
 
     with pytest.raises(
-        InvalidHistoryError,
-        match=(
-            "Insufficient demand history"
-        ),
+            InvalidHistoryError,
+            match=(
+                    "Insufficient demand history"
+            ),
     ):
         runtime.predict(
             product_sku="SKU-A",
@@ -138,20 +142,37 @@ def test_runtime_rejects_insufficient_history() -> None:
         )
 
 
-def test_runtime_rejects_unknown_series() -> None:
+def test_runtime_supports_unknown_series_with_history_scaler() -> None:
     runtime = _runtime()
 
-    with pytest.raises(
-        UnknownSeriesError,
-        match=(
-            "No scaler exists"
-        ),
-    ):
-        runtime.predict(
-            product_sku="UNKNOWN",
-            history=[
-                10.0,
-                11.0,
-                12.0,
-            ],
-        )
+    result = runtime.predict(
+        product_sku="UNKNOWN",
+        history=[
+            0.0,
+            10.0,
+            20.0,
+            30.0,
+        ],
+    )
+
+    assert (
+            result.product_sku
+            == "UNKNOWN"
+    )
+
+    assert (
+            result.prediction
+            == pytest.approx(
+        15.0
+    )
+    )
+
+    assert (
+            result.window_size
+            == 3
+    )
+
+    assert (
+            result.history_points_used
+            == 3
+    )
