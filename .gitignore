@@ -97,8 +97,8 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -154,6 +154,9 @@ database/data/
 database/backups/
 postgres-data/
 
+# Local database environment
+database/.env
+
 *.sql.gz
 *.dump
 *.backup
@@ -172,3 +175,10 @@ allure-report/
 # ==================================================
 docker-compose.override.yml
 compose.override.yml
+
+# AI agent tooling
+.agents/
+skills-lock.json
+
+# Backend local environment
+backend/.env

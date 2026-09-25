@@ -1,0 +1,59 @@
+@startuml
+left to right direction
+actor "Незарегистрированный\nпользователь" as Guest
+actor USER as User
+actor ADMIN as Admin
+actor "ML-сервис" as ML
+actor "Объектное\nхранилище" as Storage
+Admin --|> User
+rectangle "Система прогнозирования\nпотребительского спроса" {
+  usecase "Регистрация" as UC01
+  usecase "Авторизация" as UC02
+  usecase "Управление товарами" as UC03
+  usecase "Просмотр товаров" as UC04
+  usecase "Импорт продаж\nиз CSV" as UC05
+  usecase "Просмотр истории\nпродаж" as UC06
+  usecase "Построение\nпрогноза" as UC07
+  usecase "Просмотр результата" as UC08
+  usecase "Просмотр истории\nпрогнозов" as UC09
+  usecase "Выход" as UC10
+  usecase "Просмотр и изменение\nпрофиля" as UC11
+  usecase "Управление фотографией\nпрофиля" as UC12
+  usecase "Управление\nпользователями" as UC13
+  usecase "Управление\nподразделениями" as UC14
+  usecase "Управление\nдолжностями" as UC15
+  usecase "Назначение должности\nпользователю" as UC16
+  usecase "Проверка входных\nпараметров" as ValidateForecast
+  usecase "Получение истории\nпродаж" as LoadSales
+  usecase "ML-прогнозирование" as Predict
+  usecase "Сохранение\nрезультата" as SaveForecast
+  usecase "Проверка связи\nдолжности и подразделения" as ValidatePosition
+  usecase "Сохранение фотографии\nво внешнем хранилище" as StoreAvatar
+}
+Guest --> UC01
+Guest --> UC02
+User --> UC02
+User --> UC10
+User --> UC04
+User --> UC06
+User --> UC07
+User --> UC08
+User --> UC09
+User --> UC11
+User --> UC12
+Admin --> UC03
+Admin --> UC05
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+UC07 .> ValidateForecast : <<include>>
+UC07 .> LoadSales : <<include>>
+UC07 .> Predict : <<include>>
+UC07 .> SaveForecast : <<include>>
+UC15 .> ValidatePosition : <<include>>
+UC16 .> ValidatePosition : <<include>>
+UC12 .> StoreAvatar : <<include>>
+ML --> Predict
+Storage --> StoreAvatar
+@enduml

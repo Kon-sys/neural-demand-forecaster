@@ -1,0 +1,6 @@
+import { useReducedMotionSetting } from '../../hooks/motionPreference'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { CheckCircle2, X } from 'lucide-react'
+import { useStore } from '../../app/store-context'
+export function Toast() { const { toast, notify } = useStore(); const [paused, setPaused] = useState(false); const reduce = useReducedMotionSetting(); useEffect(() => { if (!toast || paused) return; const timer = setTimeout(() => notify(''), 6000); return () => clearTimeout(timer) }, [toast, notify, paused]); return <div className="toast-region" aria-live="polite"><AnimatePresence>{toast && <motion.div key={toast} className="toast" initial={{ opacity: 0, y: reduce ? 0 : 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduce ? 0 : 4, transition: { duration: .14 } }} transition={{ duration: .22, ease: [.16, 1, .3, 1] }} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}><CheckCircle2 size={20} /><span>{toast}</span><button className="icon-btn" onClick={() => notify('')} aria-label="Закрыть уведомление"><X size={16} /></button></motion.div>}</AnimatePresence></div> }

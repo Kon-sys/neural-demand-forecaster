@@ -1,0 +1,78 @@
+@startuml
+
+node "Пользовательское устройство" {
+    artifact "Web Browser" as Browser
+}
+
+node "Frontend Environment" {
+    artifact "React / Vite Application" as Frontend
+}
+
+node "Backend Environment" {
+    artifact "Spring Boot Application" as Backend
+}
+
+database "PostgreSQL" as DB
+
+cloud "Object Storage" as ObjectStorage {
+    artifact "Profile Images" as ProfileImages
+}
+
+node "ML Environment" {
+    artifact "FastAPI ML Service" as ML
+    artifact "LSTM Model" as Model
+    artifact "Preprocessing Artifacts" as Preprocessing
+}
+
+Browser --> Frontend : HTTPS
+
+Frontend --> Backend : HTTPS\nREST / JSON\nmultipart/form-data\nJWT
+
+Backend --> DB : JDBC / SQL
+
+Backend --> ObjectStorage : HTTPS\nObject Storage API
+ObjectStorage --> Backend : avatar URL
+
+Backend --> ML : HTTP / JSON\n/predict
+
+ML --> Model
+ML --> Preprocessing
+
+note right of ObjectStorage
+Хранит бинарные файлы
+фотографий профиля.
+
+PostgreSQL хранит
+только avatar_url.
+
+Секреты доступа находятся
+только на Backend.
+end note
+
+note right of DB
+Основные данные:
+
+users
+departments
+positions
+products
+sales
+forecasts
+forecast_values
+end note
+
+note bottom of Backend
+Backend является
+центральной точкой:
+
+- авторизации;
+- RBAC;
+- проверки ACTIVE/BLOCKED;
+- управления профилями;
+- управления оргструктурой;
+- бизнес-валидации;
+- доступа к Object Storage;
+- взаимодействия с ML.
+end note
+
+@enduml
