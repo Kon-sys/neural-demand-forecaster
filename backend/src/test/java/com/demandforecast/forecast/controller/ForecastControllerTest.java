@@ -78,6 +78,7 @@ class ForecastControllerTest {
                         77L,
                         20L,
                         "SKU-A",
+                        "Product A",
                         3,
                         "model-v1",
                         ForecastStatus.COMPLETED,

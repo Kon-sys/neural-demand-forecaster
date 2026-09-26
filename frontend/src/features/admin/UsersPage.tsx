@@ -160,6 +160,8 @@ function UserAvatar({
 }
 
 export function UsersPage() {
+    const [departmentFilter, setDepartmentFilter] = useState('')
+    const [positionFilter, setPositionFilter] = useState('')
     const {
         user,
     } = useAuth()
@@ -246,6 +248,8 @@ export function UsersPage() {
         summaryLoading,
         updateUser,
     } = useAdminUsers({
+        departmentId: departmentFilter || undefined,
+        positionId: positionFilter || undefined,
         search:
             deferredQuery.trim()
             || undefined,
@@ -267,6 +271,7 @@ export function UsersPage() {
     })
 
     const hasFilters =
+        !!departmentFilter || !!positionFilter ||
         query.length > 0
         || role !== 'ALL'
         || status !== 'ALL'
@@ -280,6 +285,8 @@ export function UsersPage() {
         ?? 0
 
     function resetFilters() {
+        setDepartmentFilter('')
+        setPositionFilter('')
         setQuery(
             '',
         )
@@ -696,6 +703,8 @@ export function UsersPage() {
                     </select>
                 </label>
 
+                <label className="compact-filter"><span>Подразделение</span><select value={departmentFilter} onChange={event => { setDepartmentFilter(event.target.value); setPositionFilter(''); setPage(0) }}><option value="">Все подразделения</option>{departments.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+                <label className="compact-filter"><span>Должность</span><select value={positionFilter} onChange={event => { setPositionFilter(event.target.value); setPage(0) }}><option value="">Все должности</option>{positions.filter(item => !departmentFilter || item.departmentId === departmentFilter).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
                 {hasFilters && (
                     <Button
                         variant="ghost"

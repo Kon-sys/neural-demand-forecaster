@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "source": "KP-24 frozen FreshRetail TEST",
+  "protocol": "rolling one-step-ahead",
+  "testStart": "2024-06-26",
+  "testEnd": "2024-07-02",
+  "observations": 2100,
+  "seriesCount": 300,
+  "metrics": [
+    {
+      "model": "moving_average",
+      "mae": 0.715819931972789,
+      "rmse": 1.3500138194268023,
+      "mape": 48.648876887679556,
+      "observations": 2100,
+      "mapeObservations": 2038
+    },
+    {
+      "model": "lstm",
+      "mae": 0.6906854097975932,
+      "rmse": 1.3071026843515199,
+      "mape": 48.16436761697406,
+      "observations": 2100,
+      "mapeObservations": 2038
+    }
+  ],
+  "daily": [
+    {
+      "date": "2024-06-26",
+      "actual": 2.968033333333333,
+      "movingAverage": 3.1404742857142853,
+      "lstm": 2.8707476922564705,
+      "movingAverageMae": 0.6040038095238095,
+      "lstmMae": 0.6118380812582374
+    },
+    {
+      "date": "2024-06-27",
+      "actual": 2.8022633333333333,
+      "movingAverage": 3.14817,
+      "lstm": 2.928133417422573,
+      "movingAverageMae": 0.7666238095238096,
+      "lstmMae": 0.7345573657296101
+    },
+    {
+      "date": "2024-06-28",
+      "actual": 2.8532300000000004,
+      "movingAverage": 3.1390366666666667,
+      "lstm": 3.033228816033403,
+      "movingAverageMae": 0.5701428571428572,
+      "lstmMae": 0.5294990462444226
+    },
+    {
+      "date": "2024-06-29",
+      "actual": 3.3616566666666667,
+      "movingAverage": 3.1174842857142857,
+      "lstm": 3.108763245617747,
+      "movingAverageMae": 0.7292000000000001,
+      "lstmMae": 0.6876717781213919
+    },
+    {
+      "date": "2024-06-30",
+      "actual": 3.8733633333333333,
+      "movingAverage": 3.079530476190476,
+      "lstm": 3.1052498999140163,
+      "movingAverageMae": 1.0440109523809524,
+      "lstmMae": 1.0595831987470883
+    },
+    {
+      "date": "2024-07-01",
+      "actual": 2.6457966666666666,
+      "movingAverage": 3.09884,
+      "lstm": 3.105217961119066,
+      "movingAverageMae": 0.6615633333333334,
+      "lstmMae": 0.6519525041091939
+    },
+    {
+      "date": "2024-07-02",
+      "actual": 2.8212333333333333,
+      "movingAverage": 3.082996666666667,
+      "lstm": 2.9182478809518115,
+      "movingAverageMae": 0.6351947619047619,
+      "lstmMae": 0.5596958943732083
+    }
+  ],
+  "sourceHashes": {
+    "test_predictions.csv": "7e6c1ce61206e931ed70622bcc1cd42cb229dac9723fd59be47995656a8a20a9",
+    "comparison_metrics.csv": "464a364ea6e4ee8db7a7a482f55cb4d1526126f71311f40c3fbb957e80c2fe14",
+    "daily_metrics.csv": "a9e76bf4b60b9d46a6a3ffb93c8644c1f5426a7194ca971755a88233860db62c"
+  }
+}
