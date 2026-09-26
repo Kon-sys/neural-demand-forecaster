@@ -14,6 +14,7 @@ export interface ForecastDto {
     userId: number
     productId: number
     productSku: string
+    productName: string
     forecastHorizon: number
     modelVersion: string | null
     status: ForecastStatus
@@ -150,7 +151,7 @@ export function mapForecastDto(
             dto.productSku,
 
             name:
-            dto.productSku,
+            dto.productName,
         },
 
         forecastHorizon:

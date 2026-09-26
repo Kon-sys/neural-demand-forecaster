@@ -2,6 +2,7 @@ import {
     useState,
     type FormEvent,
 } from 'react'
+import { SignalCore } from '@/components/signal/SignalCore'
 
 import {
     useNavigate,
@@ -213,12 +214,15 @@ export function ForecastCreatePage() {
                 }
             />
 
-            <div className="form-layout">
+            <div className="forecast-create-grid">
+                <div className="forecast-form-panel">
+                {forecastLoading && <div className="forecast-processing" aria-busy="true"><SignalCore processing /><span className="eyebrow">ПРОГНОЗ СПРОСА</span><h2>{selectedProduct?.name}</h2><p className="muted">Рассчитываем спрос на {horizon} дней…</p><p className="processing-note">Дождитесь завершения расчёта.</p></div>}
                 <form
-                    className="product-form"
+                    hidden={forecastLoading}
                     onSubmit={submit}
                     noValidate
                 >
+                    <div className="form-section-title"><span className="step-number">01</span><div><h2>Параметры прогноза</h2><p>Два параметра — один ясный результат.</p></div></div>
                     <Field
                         label="Товар"
                         htmlFor="forecast-product"
@@ -463,17 +467,14 @@ export function ForecastCreatePage() {
                         </Button>
                     </div>
                 </form>
+                </div>
 
-                <aside className="form-aside">
+                <aside className="forecast-explainer">
           <span className="eyebrow">
             КАК ЭТО РАБОТАЕТ
           </span>
 
-                    <h3>
-                        История становится
-                        <br />
-                        следующим сигналом.
-                    </h3>
+                    <h2>История.<br />Продолжение.<br /><span>Понимание спроса.</span></h2>
 
                     <div className="forecast-process">
                         <div>
@@ -482,7 +483,7 @@ export function ForecastCreatePage() {
                             />
 
                             <span>
-                Backend получает историю
+                Используем историю
                 продаж выбранного товара.
               </span>
                         </div>
@@ -513,9 +514,8 @@ export function ForecastCreatePage() {
 
                     <p className="muted">
                         Если истории продаж
-                        недостаточно, Backend
-                        остановит расчёт и вернёт
-                        контролируемую ошибку.
+                        недостаточно, вы получите
+                        пояснение перед повторной попыткой.
                     </p>
                 </aside>
             </div>
