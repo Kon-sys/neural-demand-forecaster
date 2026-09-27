@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import math
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,6 +8,33 @@ from typing import Iterable
 
 import torch
 from torch import nn
+
+TORCH_NUM_THREADS = int(
+    os.getenv(
+        "ML_TORCH_NUM_THREADS",
+        "1",
+    )
+)
+
+TORCH_INTEROP_THREADS = int(
+    os.getenv(
+        "ML_TORCH_INTEROP_THREADS",
+        "1",
+    )
+)
+
+torch.set_num_threads(
+    TORCH_NUM_THREADS
+)
+
+try:
+    torch.set_num_interop_threads(
+        TORCH_INTEROP_THREADS
+    )
+except RuntimeError:
+    # PyTorch allows changing inter-op threads
+    # only before parallel work has started.
+    pass
 
 from demand_forecast_ml.data.preprocessing import MinMaxScaler1D
 from demand_forecast_ml.lstm.checkpoint import load_checkpoint
