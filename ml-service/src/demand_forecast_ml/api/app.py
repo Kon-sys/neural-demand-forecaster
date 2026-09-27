@@ -15,10 +15,7 @@ from fastapi import (
     HTTPException,
     UploadFile,
 )
-from fastapi.responses import (
-    JSONResponse,
-)
-from demand_forecast_ml.evaluation.bundle import EvaluationBundle, read_bundle
+from fastapi.responses import JSONResponse
 
 from demand_forecast_ml.api.config import (
     APISettings,
@@ -33,6 +30,9 @@ from demand_forecast_ml.api.errors import (
     register_exception_handlers,
 )
 from demand_forecast_ml.api.schemas import (
+    ForecastRequest,
+    ForecastResponse,
+    ForecastValue,
     HealthResponse,
     ModelActivationResponse,
     ModelInfoResponse,
@@ -40,6 +40,10 @@ from demand_forecast_ml.api.schemas import (
     PredictResponse,
     TrainingJobResponse,
     TrainingStartResponse,
+)
+from demand_forecast_ml.evaluation.bundle import (
+    EvaluationBundle,
+    read_bundle,
 )
 from demand_forecast_ml.runtime.manager import (
     RuntimeManager,
@@ -79,7 +83,7 @@ def _read_json_file(
 
     return json.loads(
         path.read_text(
-            encoding="utf-8",
+            encoding="utf-8"
         )
     )
 
@@ -94,8 +98,7 @@ def create_app(
 ) -> FastAPI:
     resolved_settings = (
         settings
-        if settings is not None
-        else APISettings.from_environment()
+        or APISettings.from_environment()
     )
 
     service_root = (
@@ -107,8 +110,7 @@ def create_app(
 
     resolved_registry = (
         registry
-        if registry is not None
-        else ModelRegistry(
+        or ModelRegistry(
             service_root
             / "models"
         )
@@ -127,20 +129,15 @@ def create_app(
     @asynccontextmanager
     async def lifespan(
         application: FastAPI,
-    ) -> AsyncIterator[
-        None
-    ]:
+    ) -> AsyncIterator[None]:
         application.state.startup_error = None
 
         manager = runtime_manager
 
         if manager is None:
-            bootstrap_runtime = None
+            bootstrap_runtime = runtime
 
-            if runtime is not None:
-                bootstrap_runtime = runtime
-
-            else:
+            if bootstrap_runtime is None:
                 try:
                     bootstrap_runtime = (
                         PredictionRuntime.load(
@@ -165,26 +162,21 @@ def create_app(
                     )
 
             manager = RuntimeManager(
-                registry=(
-                    resolved_registry
-                ),
-                runtime=(
-                    bootstrap_runtime
-                ),
+                registry=resolved_registry,
+                runtime=bootstrap_runtime,
                 requested_device=(
                     resolved_settings
                     .device
                 ),
             )
 
-            # A production model takes precedence over the bootstrap
-            # FreshRetail model whenever one has already been activated.
-            try:
-                manager.load_active()
-            except Exception as exc:
-                application.state.startup_error = (
-                    f"{type(exc).__name__}: {exc}"
-                )
+            if runtime is None:
+                try:
+                    manager.load_active()
+                except Exception as exc:
+                    application.state.startup_error = (
+                        f"{type(exc).__name__}: {exc}"
+                    )
 
         application.state.runtime_manager = (
             manager
@@ -194,9 +186,7 @@ def create_app(
 
         if service is None:
             service = TrainingService(
-                registry=(
-                    resolved_registry
-                ),
+                registry=resolved_registry,
                 work_dir=(
                     service_root
                     / "training-jobs"
@@ -229,13 +219,33 @@ def create_app(
         application
     )
 
-    @application.get("/analytics/model-quality", response_model=EvaluationBundle)
+    @application.get(
+        "/analytics/model-quality",
+        response_model=EvaluationBundle,
+    )
     def model_quality() -> EvaluationBundle:
         try:
-            return read_bundle(resolved_settings.evaluation_bundle_path)
-        except (OSError, ValueError) as exc:
-            raise HTTPException(status_code=503, detail={"code": "evaluation_unavailable",
-                                "message": "Frozen TEST evaluation bundle is unavailable or invalid."}) from exc
+            return read_bundle(
+                resolved_settings
+                .evaluation_bundle_path
+            )
+
+        except (
+            OSError,
+            ValueError,
+        ) as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": (
+                        "evaluation_unavailable"
+                    ),
+                    "message": (
+                        "Frozen TEST evaluation bundle "
+                        "is unavailable or invalid."
+                    ),
+                },
+            ) from exc
 
     @application.get(
         "/health",
@@ -330,7 +340,7 @@ def create_app(
         "/predict",
         response_model=PredictResponse,
     )
-    async def predict(
+    def predict(
         request: PredictRequest,
         predictor: PredictorProtocol = Depends(
             get_predictor
@@ -343,7 +353,9 @@ def create_app(
             product_sku=(
                 request.product_sku
             ),
-            history=request.history,
+            history=(
+                request.history
+            ),
         )
 
         forecast_date = None
@@ -386,6 +398,86 @@ def create_app(
         )
 
     @application.post(
+        "/forecast",
+        response_model=ForecastResponse,
+    )
+    def forecast(
+        request: ForecastRequest,
+        predictor: PredictorProtocol = Depends(
+            get_predictor
+        ),
+        manager: RuntimeManager = Depends(
+            get_runtime_manager
+        ),
+    ) -> ForecastResponse:
+        result = predictor.forecast(
+            product_sku=(
+                request.product_sku
+            ),
+            history=(
+                request.history
+            ),
+            horizon=(
+                request.forecast_horizon
+            ),
+        )
+
+        values: list[
+            ForecastValue
+        ] = []
+
+        for (
+            index,
+            prediction,
+        ) in enumerate(
+            result.predictions,
+            start=1,
+        ):
+            forecast_date = None
+
+            if (
+                request.last_observation_date
+                is not None
+            ):
+                forecast_date = (
+                    request.last_observation_date
+                    + timedelta(
+                        days=index
+                    )
+                )
+
+            values.append(
+                ForecastValue(
+                    date=forecast_date,
+                    prediction=prediction,
+                )
+            )
+
+        model_info = (
+            manager.active_model_info()
+        )
+
+        return ForecastResponse(
+            product_sku=(
+                result.product_sku
+            ),
+            model="lstm",
+            model_version=(
+                model_info.version
+            ),
+            forecast_horizon=len(
+                result.predictions
+            ),
+            window_size=(
+                result.window_size
+            ),
+            history_points_used=(
+                result.history_points_used
+            ),
+            values=values,
+        )
+
+    @application.post(
         "/training/start",
         response_model=(
             TrainingStartResponse
@@ -420,14 +512,9 @@ def create_app(
                 },
             )
 
-        upload_id = (
-            uuid.uuid4()
-            .hex
-        )
-
         upload_path = (
             incoming_dir
-            / f"{upload_id}.csv"
+            / f"{uuid.uuid4().hex}.csv"
         )
 
         try:
@@ -440,8 +527,7 @@ def create_app(
                 )
 
             if (
-                upload_path.stat()
-                .st_size
+                upload_path.stat().st_size
                 == 0
             ):
                 raise HTTPException(
@@ -549,7 +635,9 @@ def create_app(
             active_version=(
                 info.version
             ),
-            source=info.source,
+            source=(
+                info.source
+            ),
             metadata=_read_json_file(
                 version.metadata_path
             ),

@@ -8,29 +8,17 @@ from typing import Iterable
 import torch
 from torch import nn
 
-from demand_forecast_ml.data.preprocessing import (
-    MinMaxScaler1D,
-)
-from demand_forecast_ml.lstm.checkpoint import (
-    load_checkpoint,
-)
-from demand_forecast_ml.lstm.scaling import (
-    SeriesScalerRegistry,
-)
-from demand_forecast_ml.lstm.training import (
-    resolve_device,
-)
+from demand_forecast_ml.data.preprocessing import MinMaxScaler1D
+from demand_forecast_ml.lstm.checkpoint import load_checkpoint
+from demand_forecast_ml.lstm.scaling import SeriesScalerRegistry
+from demand_forecast_ml.lstm.training import resolve_device
 
 
-class PredictionRuntimeError(
-    RuntimeError
-):
+class PredictionRuntimeError(RuntimeError):
     """Base error raised by prediction runtime."""
 
 
-class UnknownSeriesError(
-    PredictionRuntimeError
-):
+class UnknownSeriesError(PredictionRuntimeError):
     """
     Legacy error type kept for API compatibility.
 
@@ -39,16 +27,11 @@ class UnknownSeriesError(
     """
 
 
-class InvalidHistoryError(
-    PredictionRuntimeError
-):
+class InvalidHistoryError(PredictionRuntimeError):
     """Raised when supplied demand history cannot be used for inference."""
 
 
-@dataclass(
-    frozen=True,
-    slots=True,
-)
+@dataclass(frozen=True, slots=True)
 class PredictionResult:
     product_sku: str
     prediction: float
@@ -56,10 +39,15 @@ class PredictionResult:
     history_points_used: int
 
 
-@dataclass(
-    frozen=True,
-    slots=True,
-)
+@dataclass(frozen=True, slots=True)
+class ForecastResult:
+    product_sku: str
+    predictions: tuple[float, ...]
+    window_size: int
+    history_points_used: int
+
+
+@dataclass(frozen=True, slots=True)
 class RuntimeHealth:
     model_loaded: bool
     scalers_loaded: bool
@@ -68,22 +56,14 @@ class RuntimeHealth:
     series_count: int
 
 
-def resolve_runtime_device(
-        requested_device: str,
-) -> torch.device:
-    normalized = (
-        requested_device
-        .strip()
-        .lower()
-    )
+def resolve_runtime_device(requested_device: str) -> torch.device:
+    normalized = requested_device.strip().lower()
 
     if normalized == "auto":
         return resolve_device()
 
     if normalized == "cpu":
-        return torch.device(
-            "cpu"
-        )
+        return torch.device("cpu")
 
     if normalized == "cuda":
         if not torch.cuda.is_available():
@@ -91,13 +71,10 @@ def resolve_runtime_device(
                 "CUDA was requested but is not available."
             )
 
-        return torch.device(
-            "cuda"
-        )
+        return torch.device("cuda")
 
     raise PredictionRuntimeError(
-        "Unsupported ML device. "
-        "Expected one of: auto, cpu, cuda."
+        "Unsupported ML device. Expected one of: auto, cpu, cuda."
     )
 
 
@@ -105,27 +82,18 @@ class PredictionRuntime:
     """
     Loaded LSTM inference runtime.
 
-    The runtime owns:
-
-    - the frozen LSTM checkpoint;
-    - TRAIN-only per-series scalers for known product series;
-    - the inference device;
-    - the fixed model window size.
-
-    For product series that were not present during model training,
-    an inference-only Min-Max scaler is fitted from the supplied
-    historical demand values.
-
-    The LSTM itself is never trained or modified during prediction.
+    Known series use persisted TRAIN-only scalers.
+    Unknown series use a scaler fitted only from supplied historical data.
+    Multi-step forecasts are generated autoregressively inside the ML service.
     """
 
     def __init__(
-            self,
-            *,
-            model: nn.Module,
-            scalers: SeriesScalerRegistry,
-            device: torch.device,
-            window_size: int,
+        self,
+        *,
+        model: nn.Module,
+        scalers: SeriesScalerRegistry,
+        device: torch.device,
+        window_size: int,
     ) -> None:
         if window_size <= 0:
             raise ValueError(
@@ -137,19 +105,16 @@ class PredictionRuntime:
         self._device = device
         self._window_size = window_size
 
-        self._model.to(
-            self._device
-        )
-
+        self._model.to(self._device)
         self._model.eval()
 
     @classmethod
     def load(
-            cls,
-            *,
-            checkpoint_path: str | Path,
-            scalers_path: str | Path,
-            requested_device: str = "auto",
+        cls,
+        *,
+        checkpoint_path: str | Path,
+        scalers_path: str | Path,
+        requested_device: str = "auto",
     ) -> "PredictionRuntime":
         device = resolve_runtime_device(
             requested_device
@@ -160,10 +125,8 @@ class PredictionRuntime:
             device=device,
         )
 
-        scalers = (
-            SeriesScalerRegistry.load(
-                scalers_path
-            )
+        scalers = SeriesScalerRegistry.load(
+            scalers_path
         )
 
         return cls(
@@ -178,38 +141,25 @@ class PredictionRuntime:
         )
 
     @property
-    def window_size(
-            self,
-    ) -> int:
+    def window_size(self) -> int:
         return self._window_size
 
-    def health(
-            self,
-    ) -> RuntimeHealth:
+    def health(self) -> RuntimeHealth:
         return RuntimeHealth(
             model_loaded=True,
             scalers_loaded=True,
-            device=str(
-                self._device
-            ),
-            window_size=(
-                self._window_size
-            ),
+            device=str(self._device),
+            window_size=self._window_size,
             series_count=len(
                 self._scalers.scalers
             ),
         )
 
     def _normalize_history(
-            self,
-            history: Iterable[float],
-    ) -> tuple[
-        float,
-        ...,
-    ]:
-        values: list[
-            float
-        ] = []
+        self,
+        history: Iterable[float],
+    ) -> tuple[float, ...]:
+        values: list[float] = []
 
         for value in history:
             try:
@@ -217,15 +167,15 @@ class PredictionRuntime:
                     value
                 )
             except (
-                    TypeError,
-                    ValueError,
+                TypeError,
+                ValueError,
             ) as exc:
                 raise InvalidHistoryError(
                     "Demand history must contain numeric values only."
                 ) from exc
 
             if not math.isfinite(
-                    numeric
+                numeric
             ):
                 raise InvalidHistoryError(
                     "Demand history must contain finite values only."
@@ -240,9 +190,7 @@ class PredictionRuntime:
                 numeric
             )
 
-        if len(
-                values
-        ) < self._window_size:
+        if len(values) < self._window_size:
             raise InvalidHistoryError(
                 "Insufficient demand history. "
                 f"Expected at least {self._window_size} values, "
@@ -254,32 +202,16 @@ class PredictionRuntime:
         )
 
     def _resolve_scaler(
-            self,
-            *,
-            product_sku: str,
-            history: tuple[
-                float,
-                ...,
-            ],
+        self,
+        *,
+        product_sku: str,
+        history: tuple[float, ...],
     ) -> MinMaxScaler1D:
-        """
-        Resolve scaling parameters for inference.
-
-        Known product series use the TRAIN-only scaler stored together
-        with the model.
-
-        A product created after model training has no persisted scaler.
-        For such a series, scaling parameters are derived exclusively
-        from its already observed historical demand.
-
-        No future values or prediction targets participate in fitting.
-        """
         try:
-            return (
-                self._scalers.get(
-                    product_sku
-                )
+            return self._scalers.get(
+                product_sku
             )
+
         except KeyError:
             return MinMaxScaler1D(
                 min_value=min(
@@ -290,46 +222,15 @@ class PredictionRuntime:
                 ),
             )
 
-    def predict(
-            self,
-            *,
-            product_sku: str,
-            history: Iterable[float],
-    ) -> PredictionResult:
-        normalized_sku = (
-            str(
-                product_sku
-            )
-            .strip()
-        )
-
-        if not normalized_sku:
-            raise InvalidHistoryError(
-                "product_sku must not be blank."
-            )
-
-        full_history = (
-            self._normalize_history(
-                history
-            )
-        )
-
-        scaler = (
-            self._resolve_scaler(
-                product_sku=(
-                    normalized_sku
-                ),
-                history=(
-                    full_history
-                ),
-            )
-        )
-
-        input_history = (
-            full_history[
-                -self._window_size:
-            ]
-        )
+    def _predict_next(
+        self,
+        *,
+        history: list[float] | tuple[float, ...],
+        scaler: MinMaxScaler1D,
+    ) -> float:
+        input_history = history[
+            -self._window_size:
+        ]
 
         scaled_history = [
             scaler.transform_value(
@@ -348,17 +249,14 @@ class PredictionRuntime:
             1,
         )
 
-        with torch.no_grad():
-            scaled_prediction = float(
-                self._model(
-                    inputs
-                )
-                .detach()
-                .cpu()
-                .reshape(
-                    -1
-                )[0]
+        scaled_prediction = float(
+            self._model(
+                inputs
             )
+            .detach()
+            .cpu()
+            .reshape(-1)[0]
+        )
 
         prediction = (
             scaler
@@ -368,30 +266,134 @@ class PredictionRuntime:
         )
 
         if not math.isfinite(
-                prediction
+            prediction
         ):
             raise PredictionRuntimeError(
                 "Model produced a non-finite prediction."
             )
 
-        prediction = max(
+        return max(
             0.0,
             float(
                 prediction
             ),
         )
 
+    def predict(
+        self,
+        *,
+        product_sku: str,
+        history: Iterable[float],
+    ) -> PredictionResult:
+        normalized_sku = str(
+            product_sku
+        ).strip()
+
+        if not normalized_sku:
+            raise InvalidHistoryError(
+                "product_sku must not be blank."
+            )
+
+        full_history = (
+            self._normalize_history(
+                history
+            )
+        )
+
+        scaler = (
+            self._resolve_scaler(
+                product_sku=normalized_sku,
+                history=full_history,
+            )
+        )
+
+        with torch.inference_mode():
+            prediction = (
+                self._predict_next(
+                    history=full_history,
+                    scaler=scaler,
+                )
+            )
+
         return PredictionResult(
-            product_sku=(
-                normalized_sku
+            product_sku=normalized_sku,
+            prediction=prediction,
+            window_size=self._window_size,
+            history_points_used=min(
+                len(full_history),
+                self._window_size,
             ),
-            prediction=(
-                prediction
+        )
+
+    def forecast(
+        self,
+        *,
+        product_sku: str,
+        history: Iterable[float],
+        horizon: int,
+    ) -> ForecastResult:
+        normalized_sku = str(
+            product_sku
+        ).strip()
+
+        if not normalized_sku:
+            raise InvalidHistoryError(
+                "product_sku must not be blank."
+            )
+
+        if horizon <= 0:
+            raise InvalidHistoryError(
+                "forecast horizon must be greater than zero."
+            )
+
+        full_history = (
+            self._normalize_history(
+                history
+            )
+        )
+
+        # Scaler is resolved exactly once from observed history.
+        # Generated values must not refit scaling parameters.
+        scaler = (
+            self._resolve_scaler(
+                product_sku=normalized_sku,
+                history=full_history,
+            )
+        )
+
+        working_history = list(
+            full_history
+        )
+
+        predictions: list[float] = []
+
+        with torch.inference_mode():
+            for _ in range(
+                horizon
+            ):
+                prediction = (
+                    self._predict_next(
+                        history=working_history,
+                        scaler=scaler,
+                    )
+                )
+
+                predictions.append(
+                    prediction
+                )
+
+                working_history.append(
+                    prediction
+                )
+
+        return ForecastResult(
+            product_sku=normalized_sku,
+            predictions=tuple(
+                predictions
             ),
-            window_size=(
-                self._window_size
-            ),
-            history_points_used=len(
-                input_history
+            window_size=self._window_size,
+            history_points_used=min(
+                len(full_history),
+                self._window_size,
             ),
         )

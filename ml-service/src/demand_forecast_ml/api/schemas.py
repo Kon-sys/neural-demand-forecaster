@@ -12,9 +12,7 @@ from pydantic import (
 )
 
 
-class PredictRequest(
-    BaseModel
-):
+class PredictionInput(BaseModel):
     model_config = ConfigDict(
         extra="forbid"
     )
@@ -24,9 +22,7 @@ class PredictRequest(
         max_length=255,
     )
 
-    history: list[
-        float
-    ] = Field(
+    history: list[float] = Field(
         min_length=1,
     )
 
@@ -60,12 +56,8 @@ class PredictRequest(
     @classmethod
     def validate_history(
         cls,
-        values: list[
-            float
-        ],
-    ) -> list[
-        float
-    ]:
+        values: list[float],
+    ) -> list[float]:
         for value in values:
             if not math.isfinite(
                 value
@@ -82,9 +74,22 @@ class PredictRequest(
         return values
 
 
-class PredictResponse(
-    BaseModel
+class PredictRequest(
+    PredictionInput
 ):
+    pass
+
+
+class ForecastRequest(
+    PredictionInput
+):
+    forecast_horizon: int = Field(
+        ge=1,
+        le=90,
+    )
+
+
+class PredictResponse(BaseModel):
     model_config = ConfigDict(
         extra="forbid"
     )
@@ -108,9 +113,43 @@ class PredictResponse(
     )
 
 
-class HealthResponse(
-    BaseModel
-):
+class ForecastValue(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid"
+    )
+
+    date: (
+        date
+        | None
+    )
+
+    prediction: float
+
+
+class ForecastResponse(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid"
+    )
+
+    product_sku: str
+
+    model: str = "lstm"
+
+    model_version: (
+        str
+        | None
+    ) = None
+
+    forecast_horizon: int
+    window_size: int
+    history_points_used: int
+
+    values: list[
+        ForecastValue
+    ]
+
+
+class HealthResponse(BaseModel):
     model_config = ConfigDict(
         extra="forbid"
     )
@@ -141,20 +180,15 @@ class HealthResponse(
     ) = None
 
 
-class TrainingStartResponse(
-    BaseModel
-):
+class TrainingStartResponse(BaseModel):
     job_id: str
     status: str
     created_at: str
 
 
-class TrainingJobResponse(
-    BaseModel
-):
+class TrainingJobResponse(BaseModel):
     job_id: str
     status: str
-
     created_at: str
 
     started_at: (
@@ -186,9 +220,7 @@ class TrainingJobResponse(
     )
 
 
-class ModelInfoResponse(
-    BaseModel
-):
+class ModelInfoResponse(BaseModel):
     active_version: (
         str
         | None
@@ -213,8 +245,6 @@ class ModelInfoResponse(
     )
 
 
-class ModelActivationResponse(
-    BaseModel
-):
+class ModelActivationResponse(BaseModel):
     version: str
     status: str

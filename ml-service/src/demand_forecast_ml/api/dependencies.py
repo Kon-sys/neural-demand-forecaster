@@ -8,6 +8,7 @@ from demand_forecast_ml.runtime.manager import (
     RuntimeManager,
 )
 from demand_forecast_ml.runtime.predictor import (
+    ForecastResult,
     PredictionResult,
     RuntimeHealth,
 )
@@ -16,15 +17,22 @@ from demand_forecast_ml.training.service import (
 )
 
 
-class PredictorProtocol(
-    Protocol
-):
+class PredictorProtocol(Protocol):
     def predict(
         self,
         *,
         product_sku: str,
         history: list[float],
     ) -> PredictionResult:
+        ...
+
+    def forecast(
+        self,
+        *,
+        product_sku: str,
+        history: list[float],
+        horizon: int,
+    ) -> ForecastResult:
         ...
 
     def health(
@@ -65,15 +73,11 @@ def get_runtime_manager(
 def get_predictor(
     request: Request,
 ) -> PredictorProtocol:
-    manager = (
-        get_runtime_manager(
-            request
-        )
+    manager = get_runtime_manager(
+        request
     )
 
-    predictor = (
-        manager.get_runtime()
-    )
+    predictor = manager.get_runtime()
 
     if predictor is None:
         raise RuntimeUnavailableError(
