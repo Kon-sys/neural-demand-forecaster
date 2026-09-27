@@ -880,6 +880,25 @@ export function OrganizationPage() {
                                 )}
                         </>
                     )}
+                <div className="mobile-records">
+                    {(tab === 'departments' ? departments.map(item => ({ ...item, departmentId: null, departmentName: null })) : positions).map(item => (
+                        <article className={`record-card dictionary-card ${!item.isActive ? 'dictionary-row-inactive' : ''}`} key={item.id}>
+                            <div className="record-heading">
+                                <Badge tone={item.isActive ? 'success' : 'neutral'}>{item.isActive ? 'Активно' : 'Неактивно'}</Badge>
+                                <div className="row-actions">
+                                    <button className="icon-btn" aria-label={`Редактировать ${item.name}`} onClick={() => {
+                                        setFormError(null)
+                                        if (item.departmentId !== null) setEditing({ kind: 'position', id: item.id, name: item.name, departmentId: item.departmentId })
+                                        else setEditing({ kind: 'department', id: item.id, name: item.name })
+                                    }}><Pencil size={16} /></button>
+                                    <button className="icon-btn" disabled={busy} aria-label={`${item.isActive ? 'Деактивировать' : 'Активировать'} ${item.name}`} onClick={() => tab === 'departments' ? toggleDepartment(item.id, item.isActive) : togglePosition(item.id, item.isActive)}>{item.isActive ? <PowerOff size={16} /> : <Power size={16} />}</button>
+                                </div>
+                            </div>
+                            <h3>{item.name}</h3>
+                            <p className="cell-secondary">{item.departmentName ?? `Должностей: ${positionCounts.get(item.id) ?? 0}`}</p>
+                        </article>
+                    ))}
+                </div>
             </section>
 
             {editing && (

@@ -18,6 +18,7 @@ from fastapi import (
 from fastapi.responses import (
     JSONResponse,
 )
+from demand_forecast_ml.evaluation.bundle import EvaluationBundle, read_bundle
 
 from demand_forecast_ml.api.config import (
     APISettings,
@@ -227,6 +228,14 @@ def create_app(
     register_exception_handlers(
         application
     )
+
+    @application.get("/analytics/model-quality", response_model=EvaluationBundle)
+    def model_quality() -> EvaluationBundle:
+        try:
+            return read_bundle(resolved_settings.evaluation_bundle_path)
+        except (OSError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail={"code": "evaluation_unavailable",
+                                "message": "Frozen TEST evaluation bundle is unavailable or invalid."}) from exc
 
     @application.get(
         "/health",
