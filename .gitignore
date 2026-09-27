@@ -182,3 +182,8 @@ skills-lock.json
 
 # Backend local environment
 backend/.env
+# ML runtime training jobs
+ml-service/training-jobs/
+
+# Generated demo data
+scripts/demo/generated/
