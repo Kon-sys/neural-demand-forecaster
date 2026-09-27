@@ -1,14 +1,14 @@
 package com.demandforecast.forecast.service;
 
 import com.demandforecast.forecast.client.MlForecastClient;
+import com.demandforecast.forecast.client.MlForecastRequest;
+import com.demandforecast.forecast.client.MlForecastResponse;
+import com.demandforecast.forecast.client.MlForecastValueResponse;
 import com.demandforecast.forecast.client.MlHealthResponse;
-import com.demandforecast.forecast.client.MlPredictRequest;
-import com.demandforecast.forecast.client.MlPredictResponse;
 import com.demandforecast.forecast.dto.CreateForecastRequest;
 import com.demandforecast.forecast.dto.ForecastResponse;
 import com.demandforecast.forecast.model.ForecastEntity;
 import com.demandforecast.forecast.model.ForecastStatus;
-import com.demandforecast.forecast.model.ForecastValueEntity;
 import com.demandforecast.forecast.repository.ForecastRepository;
 import com.demandforecast.forecast.repository.ForecastValueRepository;
 import com.demandforecast.product.model.ProductEntity;
@@ -29,7 +29,12 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ForecastServiceTest {
 
@@ -45,22 +50,34 @@ class ForecastServiceTest {
     @BeforeEach
     void setUp() {
         forecastRepository =
-                mock(ForecastRepository.class);
+                mock(
+                        ForecastRepository.class
+                );
 
         forecastValueRepository =
-                mock(ForecastValueRepository.class);
+                mock(
+                        ForecastValueRepository.class
+                );
 
         salesRepository =
-                mock(SalesRepository.class);
+                mock(
+                        SalesRepository.class
+                );
 
         productRepository =
-                mock(ProductRepository.class);
+                mock(
+                        ProductRepository.class
+                );
 
         userRepository =
-                mock(UserRepository.class);
+                mock(
+                        UserRepository.class
+                );
 
         mlForecastClient =
-                mock(MlForecastClient.class);
+                mock(
+                        MlForecastClient.class
+                );
 
         service =
                 new ForecastService(
@@ -74,34 +91,57 @@ class ForecastServiceTest {
     }
 
     @Test
-    void shouldGenerateRecursiveThreeDayForecast() {
+    void shouldGenerateThreeDayForecastWithSingleMlRequest() {
         long userId = 10L;
         long productId = 20L;
 
         UserEntity user =
-                mock(UserEntity.class);
+                mock(
+                        UserEntity.class
+                );
 
         ProductEntity product =
-                mock(ProductEntity.class);
-
-        when(user.getId())
-                .thenReturn(userId);
-
-        when(product.getId())
-                .thenReturn(productId);
-
-        when(product.getSku())
-                .thenReturn("SKU-A");
-
-        when(userRepository.findById(userId))
-                .thenReturn(
-                        Optional.of(user)
+                mock(
+                        ProductEntity.class
                 );
 
-        when(productRepository.findById(productId))
-                .thenReturn(
-                        Optional.of(product)
-                );
+        when(
+                user.getId()
+        ).thenReturn(
+                userId
+        );
+
+        when(
+                product.getId()
+        ).thenReturn(
+                productId
+        );
+
+        when(
+                product.getSku()
+        ).thenReturn(
+                "SKU-A"
+        );
+
+        when(
+                userRepository.findById(
+                        userId
+                )
+        ).thenReturn(
+                Optional.of(
+                        user
+                )
+        );
+
+        when(
+                productRepository.findById(
+                        productId
+                )
+        ).thenReturn(
+                Optional.of(
+                        product
+                )
+        );
 
         LocalDate start =
                 LocalDate.of(
@@ -113,11 +153,17 @@ class ForecastServiceTest {
         List<SalesEntity> sales =
                 new ArrayList<>();
 
-        for (int index = 0; index < 14; index++) {
+        for (
+                int index = 0;
+                index < 14;
+                index++
+        ) {
             sales.add(
                     SalesEntity.create(
                             product,
-                            start.plusDays(index),
+                            start.plusDays(
+                                    index
+                            ),
                             index + 1
                     )
             );
@@ -148,9 +194,15 @@ class ForecastServiceTest {
         when(
                 salesRepository
                         .findByProduct_IdAndSaleDateBetweenOrderBySaleDateAsc(
-                                eq(productId),
-                                any(LocalDate.class),
-                                any(LocalDate.class)
+                                eq(
+                                        productId
+                                ),
+                                any(
+                                        LocalDate.class
+                                ),
+                                any(
+                                        LocalDate.class
+                                )
                         )
         ).thenReturn(
                 sales
@@ -171,69 +223,76 @@ class ForecastServiceTest {
         );
 
         when(
-                mlForecastClient.predict(
-                        any(MlPredictRequest.class)
+                mlForecastClient.forecast(
+                        any(
+                                MlForecastRequest.class
+                        )
                 )
         ).thenReturn(
-                new MlPredictResponse(
+                new MlForecastResponse(
                         "SKU-A",
-                        15.5,
                         "lstm",
                         "model-v1",
+                        3,
                         14,
                         14,
-                        LocalDate.of(
-                                2026,
-                                1,
-                                15
-                        )
-                ),
-                new MlPredictResponse(
-                        "SKU-A",
-                        16.5,
-                        "lstm",
-                        "model-v1",
-                        14,
-                        14,
-                        LocalDate.of(
-                                2026,
-                                1,
-                                16
-                        )
-                ),
-                new MlPredictResponse(
-                        "SKU-A",
-                        17.5,
-                        "lstm",
-                        "model-v1",
-                        14,
-                        14,
-                        LocalDate.of(
-                                2026,
-                                1,
-                                17
+                        List.of(
+                                new MlForecastValueResponse(
+                                        LocalDate.of(
+                                                2026,
+                                                1,
+                                                15
+                                        ),
+                                        15.5
+                                ),
+                                new MlForecastValueResponse(
+                                        LocalDate.of(
+                                                2026,
+                                                1,
+                                                16
+                                        ),
+                                        16.5
+                                ),
+                                new MlForecastValueResponse(
+                                        LocalDate.of(
+                                                2026,
+                                                1,
+                                                17
+                                        ),
+                                        17.5
+                                )
                         )
                 )
         );
 
         when(
                 forecastRepository.saveAndFlush(
-                        any(ForecastEntity.class)
+                        any(
+                                ForecastEntity.class
+                        )
                 )
-        ).thenAnswer(invocation -> {
-            ForecastEntity forecast =
-                    invocation.getArgument(0);
+        ).thenAnswer(
+                invocation -> {
+                    ForecastEntity forecast =
+                            invocation
+                                    .getArgument(
+                                            0
+                                    );
 
-            if (forecast.getId() == null) {
-                ReflectionTestUtils.setField(
-                        forecast,
-                        "id",
-                        100L
-                );
-            }
+                    if (
+                            forecast.getId()
+                                    == null
+                    ) {
+                        ReflectionTestUtils.setField(
+                                forecast,
+                                "id",
+                                100L
+                        );
+                    }
 
-            return forecast;
-        });
+                    return forecast;
+                }
+        );
 
         when(
                 forecastValueRepository.saveAll(
@@ -241,7 +300,9 @@ class ForecastServiceTest {
                 )
         ).thenAnswer(
                 invocation ->
-                        invocation.getArgument(0)
+                        invocation.getArgument(
+                                0
+                        )
         );
 
         ForecastResponse response =
@@ -253,24 +314,33 @@ class ForecastServiceTest {
                         )
                 );
 
-        assertThat(response.id())
-                .isEqualTo(100L);
+        assertThat(
+                response.id()
+        ).isEqualTo(
+                100L
+        );
 
-        assertThat(response.status())
-                .isEqualTo(
-                        ForecastStatus.COMPLETED
-                );
+        assertThat(
+                response.status()
+        ).isEqualTo(
+                ForecastStatus.COMPLETED
+        );
 
-        assertThat(response.modelVersion())
-                .isEqualTo(
-                        "model-v1"
-                );
-
-        assertThat(response.values())
-                .hasSize(3);
+        assertThat(
+                response.modelVersion()
+        ).isEqualTo(
+                "model-v1"
+        );
 
         assertThat(
                 response.values()
+        ).hasSize(
+                3
+        );
+
+        assertThat(
+                response
+                        .values()
                         .get(0)
                         .date()
         ).isEqualTo(
@@ -282,7 +352,8 @@ class ForecastServiceTest {
         );
 
         assertThat(
-                response.values()
+                response
+                        .values()
                         .get(0)
                         .predictedQuantity()
         ).isEqualByComparingTo(
@@ -290,34 +361,53 @@ class ForecastServiceTest {
         );
 
         assertThat(
-                response.values()
+                response
+                        .values()
                         .get(2)
                         .predictedQuantity()
         ).isEqualByComparingTo(
                 "17.5000"
         );
 
-        ArgumentCaptor<MlPredictRequest> captor =
+        ArgumentCaptor<MlForecastRequest> captor =
                 ArgumentCaptor.forClass(
-                        MlPredictRequest.class
+                        MlForecastRequest.class
                 );
 
         verify(
                 mlForecastClient,
-                times(3)
-        ).predict(
+                times(1)
+        ).forecast(
                 captor.capture()
         );
 
-        List<MlPredictRequest> requests =
-                captor.getAllValues();
+        MlForecastRequest mlRequest =
+                captor.getValue();
 
         assertThat(
-                requests.get(0).history()
-        ).hasSize(14);
+                mlRequest.productSku()
+        ).isEqualTo(
+                "SKU-A"
+        );
 
         assertThat(
-                requests.get(0).history()
+                mlRequest.forecastHorizon()
+        ).isEqualTo(
+                3
+        );
+
+        assertThat(
+                mlRequest.lastObservationDate()
+        ).isEqualTo(
+                LocalDate.of(
+                        2026,
+                        1,
+                        14
+                )
+        );
+
+        assertThat(
+                mlRequest.history()
         ).containsExactly(
                 1.0,
                 2.0,
@@ -333,44 +423,6 @@ class ForecastServiceTest {
                 12.0,
                 13.0,
                 14.0
-        );
-
-        assertThat(
-                requests.get(1).history()
-        ).containsExactly(
-                2.0,
-                3.0,
-                4.0,
-                5.0,
-                6.0,
-                7.0,
-                8.0,
-                9.0,
-                10.0,
-                11.0,
-                12.0,
-                13.0,
-                14.0,
-                15.5
-        );
-
-        assertThat(
-                requests.get(2).history()
-        ).containsExactly(
-                3.0,
-                4.0,
-                5.0,
-                6.0,
-                7.0,
-                8.0,
-                9.0,
-                10.0,
-                11.0,
-                12.0,
-                13.0,
-                14.0,
-                15.5,
-                16.5
         );
 
         verify(

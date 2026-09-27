@@ -2,9 +2,10 @@ package com.demandforecast.forecast.service;
 
 import com.demandforecast.common.error.ApiException;
 import com.demandforecast.forecast.client.MlForecastClient;
+import com.demandforecast.forecast.client.MlForecastRequest;
+import com.demandforecast.forecast.client.MlForecastResponse;
+import com.demandforecast.forecast.client.MlForecastValueResponse;
 import com.demandforecast.forecast.client.MlHealthResponse;
-import com.demandforecast.forecast.client.MlPredictRequest;
-import com.demandforecast.forecast.client.MlPredictResponse;
 import com.demandforecast.forecast.dto.CreateForecastRequest;
 import com.demandforecast.forecast.dto.ForecastResponse;
 import com.demandforecast.forecast.model.ForecastEntity;
@@ -74,7 +75,9 @@ public class ForecastService {
 
         ProductEntity product =
                 productRepository
-                        .findById(request.productId())
+                        .findById(
+                                request.productId()
+                        )
                         .orElseThrow(() ->
                                 new ApiException(
                                         HttpStatus.NOT_FOUND,
@@ -105,7 +108,9 @@ public class ForecastService {
                         .findFirstByProduct_IdOrderBySaleDateDesc(
                                 product.getId()
                         )
-                        .map(SalesEntity::getSaleDate)
+                        .map(
+                                SalesEntity::getSaleDate
+                        )
                         .orElseThrow(() ->
                                 insufficientHistory(
                                         windowSize
@@ -130,52 +135,44 @@ public class ForecastService {
                 forecast
         );
 
-        List<ForecastValueEntity> values =
-                new ArrayList<>(
-                        request.forecastHorizon()
-                );
-
         try {
-            LocalDate currentDate =
-                    lastObservationDate;
+            MlForecastResponse mlForecast =
+                    mlForecastClient.forecast(
+                            new MlForecastRequest(
+                                    product.getSku(),
+                                    new ArrayList<>(
+                                            history
+                                    ),
+                                    request.forecastHorizon(),
+                                    lastObservationDate
+                            )
+                    );
+
+            validateForecast(
+                    mlForecast,
+                    product.getSku(),
+                    modelVersion,
+                    lastObservationDate,
+                    windowSize,
+                    request.forecastHorizon()
+            );
+
+            List<ForecastValueEntity> values =
+                    new ArrayList<>(
+                            request.forecastHorizon()
+                    );
 
             for (
-                    int step = 0;
-                    step < request.forecastHorizon();
-                    step++
+                    MlForecastValueResponse value
+                    : mlForecast.values()
             ) {
-                MlPredictResponse prediction =
-                        mlForecastClient.predict(
-                                new MlPredictRequest(
-                                        product.getSku(),
-                                        new ArrayList<>(
-                                                history
-                                        ),
-                                        currentDate
-                                )
-                        );
-
-                validatePrediction(
-                        prediction,
-                        product.getSku(),
-                        modelVersion,
-                        currentDate,
-                        windowSize
-                );
-
-                LocalDate forecastDate =
-                        prediction.forecastDate();
-
-                double predictedQuantity =
-                        prediction.prediction();
-
                 values.add(
                         ForecastValueEntity.create(
                                 forecast,
-                                forecastDate,
+                                value.date(),
                                 BigDecimal
                                         .valueOf(
-                                                predictedQuantity
+                                                value.prediction()
                                         )
                                         .setScale(
                                                 4,
@@ -183,14 +180,6 @@ public class ForecastService {
                                         )
                         )
                 );
-
-                history.removeFirst();
-                history.addLast(
-                        predictedQuantity
-                );
-
-                currentDate =
-                        forecastDate;
             }
 
             forecastValueRepository.saveAll(
@@ -299,7 +288,9 @@ public class ForecastService {
         if (
                 firstSale
                         .getSaleDate()
-                        .isAfter(historyStart)
+                        .isAfter(
+                                historyStart
+                        )
         ) {
             throw insufficientHistory(
                     windowSize
@@ -320,7 +311,9 @@ public class ForecastService {
         for (SalesEntity sale : sales) {
             quantities.put(
                     sale.getSaleDate(),
-                    sale.getQuantity().doubleValue()
+                    sale
+                            .getQuantity()
+                            .doubleValue()
             );
         }
 
@@ -350,54 +343,53 @@ public class ForecastService {
         return history;
     }
 
-    private void validatePrediction(
-            MlPredictResponse prediction,
+    private void validateForecast(
+            MlForecastResponse response,
             String expectedSku,
             String expectedModelVersion,
             LocalDate lastObservationDate,
-            int expectedWindowSize
+            int expectedWindowSize,
+            int expectedHorizon
     ) {
+        if (response == null) {
+            throw invalidMlResponse();
+        }
+
         if (
-                prediction.productSku() == null
-                        || !prediction.productSku().equals(
-                        expectedSku
-                )
+                response.productSku() == null
+                        || !response
+                        .productSku()
+                        .equals(
+                                expectedSku
+                        )
         ) {
             throw invalidMlResponse();
         }
 
         if (
-                !Double.isFinite(
-                        prediction.prediction()
-                )
-                        || prediction.prediction() < 0.0
-        ) {
-            throw invalidMlResponse();
-        }
-
-        if (
-                prediction.windowSize()
+                response.windowSize()
                         != expectedWindowSize
         ) {
             throw invalidMlResponse();
         }
 
-        LocalDate expectedForecastDate =
-                lastObservationDate.plusDays(1);
+        if (
+                response.historyPointsUsed()
+                        != expectedWindowSize
+        ) {
+            throw invalidMlResponse();
+        }
 
         if (
-                prediction.forecastDate() == null
-                        || !prediction.forecastDate()
-                        .equals(
-                                expectedForecastDate
-                        )
+                response.forecastHorizon()
+                        != expectedHorizon
         ) {
             throw invalidMlResponse();
         }
 
         String responseModelVersion =
                 normalizeModelVersion(
-                        prediction.modelVersion()
+                        response.modelVersion()
                 );
 
         if (
@@ -410,6 +402,56 @@ public class ForecastService {
                     "ML_MODEL_CHANGED_DURING_FORECAST",
                     "ML model changed while the forecast was being generated"
             );
+        }
+
+        List<MlForecastValueResponse> values =
+                response.values();
+
+        if (
+                values == null
+                        || values.size()
+                        != expectedHorizon
+        ) {
+            throw invalidMlResponse();
+        }
+
+        for (
+                int index = 0;
+                index < values.size();
+                index++
+        ) {
+            MlForecastValueResponse value =
+                    values.get(index);
+
+            if (value == null) {
+                throw invalidMlResponse();
+            }
+
+            LocalDate expectedDate =
+                    lastObservationDate.plusDays(
+                            index + 1L
+                    );
+
+            if (
+                    value.date() == null
+                            || !value
+                            .date()
+                            .equals(
+                                    expectedDate
+                            )
+            ) {
+                throw invalidMlResponse();
+            }
+
+            if (
+                    !Double.isFinite(
+                            value.prediction()
+                    )
+                            || value.prediction()
+                            < 0.0
+            ) {
+                throw invalidMlResponse();
+            }
         }
     }
 

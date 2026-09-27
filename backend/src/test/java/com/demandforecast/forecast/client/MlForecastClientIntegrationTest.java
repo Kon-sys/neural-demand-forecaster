@@ -36,7 +36,9 @@ class MlForecastClientIntegrationTest {
 
         baseUrl =
                 "http://127.0.0.1:"
-                        + server.getAddress().getPort();
+                        + server
+                        .getAddress()
+                        .getPort();
     }
 
     @AfterEach
@@ -47,7 +49,7 @@ class MlForecastClientIntegrationTest {
     }
 
     @Test
-    void shouldCallMlHealthAndPredictionEndpoints() {
+    void shouldCallMlHealthAndForecastEndpoints() {
         AtomicReference<String> requestBody =
                 new AtomicReference<>();
 
@@ -91,7 +93,7 @@ class MlForecastClientIntegrationTest {
         );
 
         server.createContext(
-                "/predict",
+                "/forecast",
                 exchange -> {
                     requestBody.set(
                             new String(
@@ -106,12 +108,25 @@ class MlForecastClientIntegrationTest {
                             """
                             {
                               "product_sku": "SKU-A",
-                              "prediction": 15.75,
                               "model": "lstm",
                               "model_version": "model-v1",
+                              "forecast_horizon": 3,
                               "window_size": 14,
                               "history_points_used": 14,
-                              "forecast_date": "2026-01-15"
+                              "values": [
+                                {
+                                  "date": "2026-01-15",
+                                  "prediction": 15.75
+                                },
+                                {
+                                  "date": "2026-01-16",
+                                  "prediction": 16.25
+                                },
+                                {
+                                  "date": "2026-01-17",
+                                  "prediction": 17.5
+                                }
+                              ]
                             }
                             """
                                     .getBytes(
@@ -146,7 +161,9 @@ class MlForecastClientIntegrationTest {
 
         assertThat(
                 health.status()
-        ).isEqualTo("ok");
+        ).isEqualTo(
+                "ok"
+        );
 
         assertThat(
                 health.modelLoaded()
@@ -158,7 +175,9 @@ class MlForecastClientIntegrationTest {
 
         assertThat(
                 health.windowSize()
-        ).isEqualTo(14);
+        ).isEqualTo(
+                14
+        );
 
         assertThat(
                 health.activeModelVersion()
@@ -166,9 +185,9 @@ class MlForecastClientIntegrationTest {
                 "model-v1"
         );
 
-        MlPredictResponse prediction =
-                client.predict(
-                        new MlPredictRequest(
+        MlForecastResponse forecast =
+                client.forecast(
+                        new MlForecastRequest(
                                 "SKU-A",
                                 List.of(
                                         1.0,
@@ -186,6 +205,7 @@ class MlForecastClientIntegrationTest {
                                         13.0,
                                         14.0
                                 ),
+                                3,
                                 LocalDate.of(
                                         2026,
                                         1,
@@ -195,29 +215,40 @@ class MlForecastClientIntegrationTest {
                 );
 
         assertThat(
-                prediction.productSku()
+                forecast.productSku()
         ).isEqualTo(
                 "SKU-A"
         );
 
         assertThat(
-                prediction.prediction()
-        ).isEqualTo(
-                15.75
-        );
-
-        assertThat(
-                prediction.modelVersion()
+                forecast.modelVersion()
         ).isEqualTo(
                 "model-v1"
         );
 
         assertThat(
-                prediction.windowSize()
-        ).isEqualTo(14);
+                forecast.forecastHorizon()
+        ).isEqualTo(
+                3
+        );
 
         assertThat(
-                prediction.forecastDate()
+                forecast.windowSize()
+        ).isEqualTo(
+                14
+        );
+
+        assertThat(
+                forecast.values()
+        ).hasSize(
+                3
+        );
+
+        assertThat(
+                forecast
+                        .values()
+                        .getFirst()
+                        .date()
         ).isEqualTo(
                 LocalDate.of(
                         2026,
@@ -227,9 +258,24 @@ class MlForecastClientIntegrationTest {
         );
 
         assertThat(
+                forecast
+                        .values()
+                        .getFirst()
+                        .prediction()
+        ).isEqualTo(
+                15.75
+        );
+
+        assertThat(
                 requestBody.get()
         ).contains(
                 "\"product_sku\":\"SKU-A\""
+        );
+
+        assertThat(
+                requestBody.get()
+        ).contains(
+                "\"forecast_horizon\":3"
         );
 
         assertThat(
@@ -242,7 +288,7 @@ class MlForecastClientIntegrationTest {
     @Test
     void shouldMapMlServiceUnavailableResponse() {
         server.createContext(
-                "/predict",
+                "/forecast",
                 exchange -> {
                     byte[] body =
                             """
@@ -279,8 +325,8 @@ class MlForecastClientIntegrationTest {
 
         assertThatThrownBy(
                 () ->
-                        client.predict(
-                                new MlPredictRequest(
+                        client.forecast(
+                                new MlForecastRequest(
                                         "SKU-A",
                                         List.of(
                                                 1.0,
@@ -298,6 +344,7 @@ class MlForecastClientIntegrationTest {
                                                 13.0,
                                                 14.0
                                         ),
+                                        3,
                                         LocalDate.of(
                                                 2026,
                                                 1,
@@ -313,7 +360,9 @@ class MlForecastClientIntegrationTest {
                                     exception
                                             .getStatus()
                                             .value()
-                            ).isEqualTo(503);
+                            ).isEqualTo(
+                                    503
+                            );
 
                             assertThat(
                                     exception
@@ -329,7 +378,9 @@ class MlForecastClientIntegrationTest {
         RestClient restClient =
                 RestClient
                         .builder()
-                        .baseUrl(baseUrl)
+                        .baseUrl(
+                                baseUrl
+                        )
                         .build();
 
         return new MlForecastClient(

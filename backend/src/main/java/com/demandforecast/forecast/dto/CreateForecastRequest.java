@@ -10,7 +10,7 @@ public record CreateForecastRequest(
         Long productId,
 
         @Min(1)
-        @Max(365)
+        @Max(90)
         int forecastHorizon
 
 ) {

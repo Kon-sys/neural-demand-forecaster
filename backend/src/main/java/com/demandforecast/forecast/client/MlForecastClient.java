@@ -51,7 +51,9 @@ public class MlForecastClient {
             throw exception;
 
         } catch (RestClientResponseException exception) {
-            throw mapResponseException(exception);
+            throw mapResponseException(
+                    exception
+            );
 
         } catch (RestClientException exception) {
             throw unavailable();
@@ -80,7 +82,42 @@ public class MlForecastClient {
             throw exception;
 
         } catch (RestClientResponseException exception) {
-            throw mapResponseException(exception);
+            throw mapResponseException(
+                    exception
+            );
+
+        } catch (RestClientException exception) {
+            throw unavailable();
+        }
+    }
+
+    public MlForecastResponse forecast(
+            MlForecastRequest request
+    ) {
+        try {
+            MlForecastResponse response =
+                    restClient
+                            .post()
+                            .uri("/forecast")
+                            .body(request)
+                            .retrieve()
+                            .body(
+                                    MlForecastResponse.class
+                            );
+
+            if (response == null) {
+                throw invalidResponse();
+            }
+
+            return response;
+
+        } catch (ApiException exception) {
+            throw exception;
+
+        } catch (RestClientResponseException exception) {
+            throw mapResponseException(
+                    exception
+            );
 
         } catch (RestClientException exception) {
             throw unavailable();
@@ -91,9 +128,14 @@ public class MlForecastClient {
             RestClientResponseException exception
     ) {
         int status =
-                exception.getStatusCode().value();
+                exception
+                        .getStatusCode()
+                        .value();
 
-        if (status == 400 || status == 422) {
+        if (
+                status == 400
+                        || status == 422
+        ) {
             return new ApiException(
                     HttpStatus.UNPROCESSABLE_ENTITY,
                     "ML_FORECAST_REJECTED",
