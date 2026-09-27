@@ -155,7 +155,7 @@ function ProfileContent() {
                 current => ({
                     ...current,
                     avatar:
-                        '� азмер изображения не должен превышать 2 МБ',
+                        'Размер изображения не должен превышать 2 МБ',
                 }),
             )
 
@@ -479,14 +479,14 @@ function ProfileContent() {
                             <dd>
                                 {user.role ===
                                 'ADMIN'
-                                    ? '� асширенный'
+                                    ? 'Расширенный'
                                     : 'Стандартный'}
                             </dd>
                         </div>
                     </dl>
 
                     <p className="profile-summary-note">
-                        � оль, статус учётной записи,
+                        Роль, статус учётной записи,
                         должность и подразделение
                         назначаются администратором
                         системы.
@@ -511,7 +511,7 @@ function ProfileContent() {
                     <p className="profile-section-description">
                         Вы можете изменить имя,
                         электронную почту и фотографию.
-                        � абочие атрибуты управляются
+                        Рабочие атрибуты управляются
                         администратором.
                     </p>
 
@@ -558,7 +558,7 @@ function ProfileContent() {
 
                     <div
                         className="profile-readonly-grid"
-                        aria-label="� абочие атрибуты"
+                        aria-label="Рабочие атрибуты"
                     >
                         <div className="profile-readonly-field">
                             <div>

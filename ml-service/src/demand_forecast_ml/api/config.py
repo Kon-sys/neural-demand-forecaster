@@ -26,6 +26,7 @@ class APISettings:
     checkpoint_path: Path
     scalers_path: Path
     device: str
+    evaluation_bundle_path: Path = ML_SERVICE_ROOT / "evaluation" / "kp24-v1.json"
 
     @classmethod
     def from_environment(
@@ -64,4 +65,5 @@ class APISettings:
                 scalers_path
             ),
             device=device,
+            evaluation_bundle_path=Path(os.getenv("ML_EVALUATION_BUNDLE_PATH", str(ML_SERVICE_ROOT / "evaluation" / "kp24-v1.json"))),
         )
