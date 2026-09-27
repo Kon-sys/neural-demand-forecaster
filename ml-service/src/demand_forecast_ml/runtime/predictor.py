@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 import math
 from dataclasses import dataclass
 from pathlib import Path
@@ -354,12 +355,14 @@ class PredictionRuntime:
         )
 
     def forecast(
-        self,
-        *,
-        product_sku: str,
-        history: Iterable[float],
-        horizon: int,
+            self,
+            *,
+            product_sku: str,
+            history: Iterable[float],
+            horizon: int,
     ) -> ForecastResult:
+        total_started = time.perf_counter()
+
         normalized_sku = str(
             product_sku
         ).strip()
@@ -374,19 +377,39 @@ class PredictionRuntime:
                 "forecast horizon must be greater than zero."
             )
 
-        full_history = (
-            self._normalize_history(
-                history
-            )
+        normalize_started = time.perf_counter()
+
+        full_history = self._normalize_history(
+            history
         )
 
-        # Scaler is resolved exactly once from observed history.
-        # Generated values must not refit scaling parameters.
-        scaler = (
-            self._resolve_scaler(
-                product_sku=normalized_sku,
-                history=full_history,
-            )
+        print(
+            "[FORECAST PROFILE] normalize:",
+            round(
+                time.perf_counter()
+                - normalize_started,
+                6,
+            ),
+            "sec",
+            flush=True,
+        )
+
+        scaler_started = time.perf_counter()
+
+        scaler = self._resolve_scaler(
+            product_sku=normalized_sku,
+            history=full_history,
+        )
+
+        print(
+            "[FORECAST PROFILE] scaler:",
+            round(
+                time.perf_counter()
+                - scaler_started,
+                6,
+            ),
+            "sec",
+            flush=True,
         )
 
         working_history = list(
@@ -396,14 +419,30 @@ class PredictionRuntime:
         predictions: list[float] = []
 
         with torch.inference_mode():
-            for _ in range(
-                horizon
+            for step in range(
+                    horizon
             ):
+                step_started = (
+                    time.perf_counter()
+                )
+
                 prediction = (
                     self._predict_next(
                         history=working_history,
                         scaler=scaler,
                     )
+                )
+
+                step_elapsed = (
+                        time.perf_counter()
+                        - step_started
+                )
+
+                print(
+                    f"[FORECAST PROFILE] "
+                    f"step={step + 1}/{horizon}: "
+                    f"{step_elapsed:.6f} sec",
+                    flush=True,
                 )
 
                 predictions.append(
@@ -413,6 +452,17 @@ class PredictionRuntime:
                 working_history.append(
                     prediction
                 )
+
+        print(
+            "[FORECAST PROFILE] total:",
+            round(
+                time.perf_counter()
+                - total_started,
+                6,
+            ),
+            "sec",
+            flush=True,
+        )
 
         return ForecastResult(
             product_sku=normalized_sku,
