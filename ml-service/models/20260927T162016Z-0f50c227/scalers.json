@@ -1,0 +1,197 @@
+{
+  "type": "per_series_min_max",
+  "series": {
+    "BEV-COFFEE-001": {
+      "min_value": 0.0,
+      "max_value": 85.0
+    },
+    "BEV-COLA-001": {
+      "min_value": 0.0,
+      "max_value": 244.0
+    },
+    "BEV-ENERGY-001": {
+      "min_value": 19.0,
+      "max_value": 142.0
+    },
+    "BEV-JUICE-001": {
+      "min_value": 19.0,
+      "max_value": 136.0
+    },
+    "BEV-TEA-001": {
+      "min_value": 0.0,
+      "max_value": 137.0
+    },
+    "BEV-WATER-001": {
+      "min_value": 0.0,
+      "max_value": 269.0
+    },
+    "CON-CAKE-001": {
+      "min_value": 8.0,
+      "max_value": 113.0
+    },
+    "CON-CANDY-001": {
+      "min_value": 0.0,
+      "max_value": 147.0
+    },
+    "CON-CHOC-001": {
+      "min_value": 0.0,
+      "max_value": 210.0
+    },
+    "CON-COOKIE-001": {
+      "min_value": 20.0,
+      "max_value": 157.0
+    },
+    "CON-MARSH-001": {
+      "min_value": 0.0,
+      "max_value": 78.0
+    },
+    "CON-WAFFLE-001": {
+      "min_value": 0.0,
+      "max_value": 108.0
+    },
+    "DAI-BUTTER-001": {
+      "min_value": 14.0,
+      "max_value": 96.0
+    },
+    "DAI-CHEESE-001": {
+      "min_value": 14.0,
+      "max_value": 93.0
+    },
+    "DAI-CURD-001": {
+      "min_value": 0.0,
+      "max_value": 99.0
+    },
+    "DAI-KEFIR-001": {
+      "min_value": 0.0,
+      "max_value": 148.0
+    },
+    "DAI-MILK-001": {
+      "min_value": 40.0,
+      "max_value": 222.0
+    },
+    "DAI-YOGURT-001": {
+      "min_value": 0.0,
+      "max_value": 181.0
+    },
+    "FRZ-BERRY-001": {
+      "min_value": 11.0,
+      "max_value": 60.0
+    },
+    "FRZ-CUTLET-001": {
+      "min_value": 12.0,
+      "max_value": 75.0
+    },
+    "FRZ-DUMPL-001": {
+      "min_value": 12.0,
+      "max_value": 103.0
+    },
+    "FRZ-PANCAKE-001": {
+      "min_value": 13.0,
+      "max_value": 66.0
+    },
+    "FRZ-PIZZA-001": {
+      "min_value": 0.0,
+      "max_value": 87.0
+    },
+    "FRZ-VEG-001": {
+      "min_value": 0.0,
+      "max_value": 63.0
+    },
+    "GRO-BUCKWHEAT-001": {
+      "min_value": 18.0,
+      "max_value": 92.0
+    },
+    "GRO-FLOUR-001": {
+      "min_value": 22.0,
+      "max_value": 73.0
+    },
+    "GRO-OIL-001": {
+      "min_value": 13.0,
+      "max_value": 74.0
+    },
+    "GRO-PASTA-001": {
+      "min_value": 0.0,
+      "max_value": 103.0
+    },
+    "GRO-RICE-001": {
+      "min_value": 0.0,
+      "max_value": 81.0
+    },
+    "GRO-SUGAR-001": {
+      "min_value": 0.0,
+      "max_value": 97.0
+    },
+    "HOU-BAGS-001": {
+      "min_value": 6.0,
+      "max_value": 32.0
+    },
+    "HOU-CLEAN-001": {
+      "min_value": 0.0,
+      "max_value": 45.0
+    },
+    "HOU-DETERGENT-001": {
+      "min_value": 15.0,
+      "max_value": 40.0
+    },
+    "HOU-DISH-001": {
+      "min_value": 0.0,
+      "max_value": 50.0
+    },
+    "HOU-PAPER-001": {
+      "min_value": 15.0,
+      "max_value": 70.0
+    },
+    "HOU-SPONGE-001": {
+      "min_value": 0.0,
+      "max_value": 38.0
+    },
+    "PER-DEO-001": {
+      "min_value": 8.0,
+      "max_value": 45.0
+    },
+    "PER-GEL-001": {
+      "min_value": 10.0,
+      "max_value": 52.0
+    },
+    "PER-SHAMPOO-001": {
+      "min_value": 0.0,
+      "max_value": 43.0
+    },
+    "PER-SOAP-001": {
+      "min_value": 13.0,
+      "max_value": 51.0
+    },
+    "PER-TISSUE-001": {
+      "min_value": 0.0,
+      "max_value": 70.0
+    },
+    "PER-TOOTH-001": {
+      "min_value": 10.0,
+      "max_value": 44.0
+    },
+    "SNK-BAR-001": {
+      "min_value": 0.0,
+      "max_value": 129.0
+    },
+    "SNK-CHIPS-001": {
+      "min_value": 20.0,
+      "max_value": 171.0
+    },
+    "SNK-CRACKERS-001": {
+      "min_value": 0.0,
+      "max_value": 82.0
+    },
+    "SNK-CRISP-001": {
+      "min_value": 0.0,
+      "max_value": 70.0
+    },
+    "SNK-NUTS-001": {
+      "min_value": 24.0,
+      "max_value": 125.0
+    },
+    "SNK-POPCORN-001": {
+      "min_value": 9.0,
+      "max_value": 90.0
+    }
+  }
+}
