@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import os
-import time
 import math
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -85,14 +84,22 @@ class RuntimeHealth:
     series_count: int
 
 
-def resolve_runtime_device(requested_device: str) -> torch.device:
-    normalized = requested_device.strip().lower()
+def resolve_runtime_device(
+    requested_device: str,
+) -> torch.device:
+    normalized = (
+        requested_device
+        .strip()
+        .lower()
+    )
 
     if normalized == "auto":
         return resolve_device()
 
     if normalized == "cpu":
-        return torch.device("cpu")
+        return torch.device(
+            "cpu"
+        )
 
     if normalized == "cuda":
         if not torch.cuda.is_available():
@@ -100,10 +107,13 @@ def resolve_runtime_device(requested_device: str) -> torch.device:
                 "CUDA was requested but is not available."
             )
 
-        return torch.device("cuda")
+        return torch.device(
+            "cuda"
+        )
 
     raise PredictionRuntimeError(
-        "Unsupported ML device. Expected one of: auto, cpu, cuda."
+        "Unsupported ML device. "
+        "Expected one of: auto, cpu, cuda."
     )
 
 
@@ -134,7 +144,10 @@ class PredictionRuntime:
         self._device = device
         self._window_size = window_size
 
-        self._model.to(self._device)
+        self._model.to(
+            self._device
+        )
+
         self._model.eval()
 
     @classmethod
@@ -145,21 +158,29 @@ class PredictionRuntime:
         scalers_path: str | Path,
         requested_device: str = "auto",
     ) -> "PredictionRuntime":
-        device = resolve_runtime_device(
-            requested_device
+        device = (
+            resolve_runtime_device(
+                requested_device
+            )
         )
 
-        loaded_checkpoint = load_checkpoint(
-            checkpoint_path,
-            device=device,
+        loaded_checkpoint = (
+            load_checkpoint(
+                checkpoint_path,
+                device=device,
+            )
         )
 
-        scalers = SeriesScalerRegistry.load(
-            scalers_path
+        scalers = (
+            SeriesScalerRegistry.load(
+                scalers_path
+            )
         )
 
         return cls(
-            model=loaded_checkpoint.model,
+            model=(
+                loaded_checkpoint.model
+            ),
             scalers=scalers,
             device=device,
             window_size=(
@@ -170,15 +191,23 @@ class PredictionRuntime:
         )
 
     @property
-    def window_size(self) -> int:
+    def window_size(
+        self,
+    ) -> int:
         return self._window_size
 
-    def health(self) -> RuntimeHealth:
+    def health(
+        self,
+    ) -> RuntimeHealth:
         return RuntimeHealth(
             model_loaded=True,
             scalers_loaded=True,
-            device=str(self._device),
-            window_size=self._window_size,
+            device=str(
+                self._device
+            ),
+            window_size=(
+                self._window_size
+            ),
             series_count=len(
                 self._scalers.scalers
             ),
@@ -195,6 +224,7 @@ class PredictionRuntime:
                 numeric = float(
                     value
                 )
+
             except (
                 TypeError,
                 ValueError,
@@ -219,7 +249,10 @@ class PredictionRuntime:
                 numeric
             )
 
-        if len(values) < self._window_size:
+        if (
+            len(values)
+            < self._window_size
+        ):
             raise InvalidHistoryError(
                 "Insufficient demand history. "
                 f"Expected at least {self._window_size} values, "
@@ -254,7 +287,10 @@ class PredictionRuntime:
     def _predict_next(
         self,
         *,
-        history: list[float] | tuple[float, ...],
+        history: (
+            list[float]
+            | tuple[float, ...]
+        ),
         scaler: MinMaxScaler1D,
     ) -> float:
         input_history = history[
@@ -331,7 +367,9 @@ class PredictionRuntime:
 
         scaler = (
             self._resolve_scaler(
-                product_sku=normalized_sku,
+                product_sku=(
+                    normalized_sku
+                ),
                 history=full_history,
             )
         )
@@ -339,30 +377,36 @@ class PredictionRuntime:
         with torch.inference_mode():
             prediction = (
                 self._predict_next(
-                    history=full_history,
+                    history=(
+                        full_history
+                    ),
                     scaler=scaler,
                 )
             )
 
         return PredictionResult(
-            product_sku=normalized_sku,
+            product_sku=(
+                normalized_sku
+            ),
             prediction=prediction,
-            window_size=self._window_size,
+            window_size=(
+                self._window_size
+            ),
             history_points_used=min(
-                len(full_history),
+                len(
+                    full_history
+                ),
                 self._window_size,
             ),
         )
 
     def forecast(
-            self,
-            *,
-            product_sku: str,
-            history: Iterable[float],
-            horizon: int,
+        self,
+        *,
+        product_sku: str,
+        history: Iterable[float],
+        horizon: int,
     ) -> ForecastResult:
-        total_started = time.perf_counter()
-
         normalized_sku = str(
             product_sku
         ).strip()
@@ -377,72 +421,42 @@ class PredictionRuntime:
                 "forecast horizon must be greater than zero."
             )
 
-        normalize_started = time.perf_counter()
-
-        full_history = self._normalize_history(
-            history
+        full_history = (
+            self._normalize_history(
+                history
+            )
         )
 
-        print(
-            "[FORECAST PROFILE] normalize:",
-            round(
-                time.perf_counter()
-                - normalize_started,
-                6,
-            ),
-            "sec",
-            flush=True,
-        )
-
-        scaler_started = time.perf_counter()
-
-        scaler = self._resolve_scaler(
-            product_sku=normalized_sku,
-            history=full_history,
-        )
-
-        print(
-            "[FORECAST PROFILE] scaler:",
-            round(
-                time.perf_counter()
-                - scaler_started,
-                6,
-            ),
-            "sec",
-            flush=True,
+        # Resolve scaler exactly once from observed history.
+        # Generated predictions must not change scaling parameters.
+        scaler = (
+            self._resolve_scaler(
+                product_sku=(
+                    normalized_sku
+                ),
+                history=full_history,
+            )
         )
 
         working_history = list(
             full_history
         )
 
-        predictions: list[float] = []
+        predictions: list[
+            float
+        ] = []
 
         with torch.inference_mode():
-            for step in range(
-                    horizon
+            for _ in range(
+                horizon
             ):
-                step_started = (
-                    time.perf_counter()
-                )
-
                 prediction = (
                     self._predict_next(
-                        history=working_history,
+                        history=(
+                            working_history
+                        ),
                         scaler=scaler,
                     )
-                )
-
-                step_elapsed = (
-                        time.perf_counter()
-                        - step_started
-                )
-
-                print(
-                    f"[FORECAST PROFILE] "
-                    f"step={step + 1}/{horizon}: "
-                    f"{step_elapsed:.6f} sec",
-                    flush=True,
                 )
 
                 predictions.append(
@@ -453,25 +467,20 @@ class PredictionRuntime:
                     prediction
                 )
 
-        print(
-            "[FORECAST PROFILE] total:",
-            round(
-                time.perf_counter()
-                - total_started,
-                6,
-            ),
-            "sec",
-            flush=True,
-        )
-
         return ForecastResult(
-            product_sku=normalized_sku,
+            product_sku=(
+                normalized_sku
+            ),
             predictions=tuple(
                 predictions
             ),
-            window_size=self._window_size,
+            window_size=(
+                self._window_size
+            ),
             history_points_used=min(
-                len(full_history),
+                len(
+                    full_history
+                ),
                 self._window_size,
             ),
         )
